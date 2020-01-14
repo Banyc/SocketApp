@@ -12,3 +12,4 @@ A simple interactive socket. Cross-platform.
 
 - [ ] Support UDP
 - [ ] Handle Errors
+- [ ] SocketApp Hosts a Http Proxy Server
