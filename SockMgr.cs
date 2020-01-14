@@ -8,7 +8,7 @@ namespace SocketApp
 {
     public enum SocketRole
     {
-        Server,
+        Listener,
         Client,
     }
 
@@ -134,11 +134,22 @@ namespace SocketApp
                         break;
                 }
             }
+            catch (ObjectDisposedException) { }  // the socket has been disposed.
         }
 
         public void Shutdown()
         {
-            _socket.Shutdown(SocketShutdown.Both);
+            try
+            {
+                if (this.Role == SocketRole.Client)
+                    _socket.Shutdown(SocketShutdown.Both);
+                _socket.Close();
+            }
+            catch (Exception)
+            {
+
+            }
+
             SocketShutdownEvent?.Invoke(this, new SocketShutdownEventArgs(true));
         }
     }

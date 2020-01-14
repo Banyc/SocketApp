@@ -17,18 +17,20 @@ namespace SocketApp
         public delegate void AcceptEventHandler(SockFactory sender, AcceptEventArgs e);
         public event AcceptEventHandler AcceptEvent;
         IPAddress _ipAddress;
-        int _port = 11000;
+        int _listenerPort = 11000;
+        int _localPort = -1;  // not for listener
 
-        public void SetConfig(string ipAddress, int port)
+        public void SetConfig(string ipAddress, int remotePort, int localPort = -1)
         {
             _ipAddress = IPAddress.Parse(ipAddress);
-            _port = port;
+            _listenerPort = remotePort;
+            _localPort = localPort;
         }
 
-        public Socket GetTcpListener()
+        public SockMgr GetTcpListener()
         {
             IPAddress ipAddress = IPAddress.Parse("0.0.0.0");
-            IPEndPoint localEndPoint = new IPEndPoint(ipAddress, _port);
+            IPEndPoint localEndPoint = new IPEndPoint(ipAddress, _listenerPort);
 
             // Create a TCP/IP socket.  
             Socket listener = new Socket(ipAddress.AddressFamily,
@@ -41,28 +43,33 @@ namespace SocketApp
             listener.Bind(localEndPoint);
             listener.Listen(4);
 
-            return listener;
+            SockMgr sockMgr = new SockMgr(listener, SocketRole.Listener);
+            return sockMgr;
         }
 
-        public void ServerAccept(Socket listener)
+        public void ServerAccept(SockMgr listener)
         {
-            listener.BeginAccept(
-                new System.AsyncCallback(AcceptCallback), listener);
+            listener.GetSocket().BeginAccept(
+                new System.AsyncCallback(AcceptCallback), listener.GetSocket());
         }
 
         private void AcceptCallback(IAsyncResult ar)
         {
-            // Get the socket that handles the client request.  
-            Socket listener = (Socket)ar.AsyncState;
-            Socket handler = listener.EndAccept(ar);
+            try
+            {
+                // Get the socket that handles the client request.  
+                Socket listener = (Socket)ar.AsyncState;
+                Socket handler = listener.EndAccept(ar);
 
-            SockMgr sockMgr = new SockMgr(handler, SocketRole.Server);
-            BindingSockMgr(sockMgr);
+                SockMgr sockMgr = new SockMgr(handler, SocketRole.Client);
+                BindingSockMgr(sockMgr);
 
-            AcceptEvent?.Invoke(this, new AcceptEventArgs(sockMgr));
-            
-            listener.BeginAccept(
-                new System.AsyncCallback(AcceptCallback), listener);
+                AcceptEvent?.Invoke(this, new AcceptEventArgs(sockMgr));
+
+                listener.BeginAccept(
+                    new System.AsyncCallback(AcceptCallback), listener);
+            }
+            catch (ObjectDisposedException) { }  // listener closed
         }
 
         public SockMgr GetTcpClient()
@@ -70,7 +77,10 @@ namespace SocketApp
             Socket sock = new Socket(_ipAddress.AddressFamily,
                 SocketType.Stream, ProtocolType.Tcp);
 
-            sock.Connect(new IPEndPoint(_ipAddress, _port));
+            if (_localPort >= 0)
+                sock.Bind(new IPEndPoint(IPAddress.Any, _localPort));
+
+            sock.Connect(new IPEndPoint(_ipAddress, _listenerPort));
 
             SockMgr sockMgr = new SockMgr(sock, SocketRole.Client);
             BindingSockMgr(sockMgr);
@@ -83,11 +93,11 @@ namespace SocketApp
         {
             Socket listener = new Socket(_ipAddress.AddressFamily,
                 SocketType.Dgram, ProtocolType.Udp);
-            
+
             listener.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.ReuseAddress, true);
-            listener.Bind(new IPEndPoint(_ipAddress, _port));
-            
-            SockMgr sockMgr = new SockMgr(listener, SocketRole.Server);
+            listener.Bind(new IPEndPoint(_ipAddress, _listenerPort));
+
+            SockMgr sockMgr = new SockMgr(listener, SocketRole.Listener);
             BindingSockMgr(sockMgr);
 
             return sockMgr;
@@ -98,7 +108,7 @@ namespace SocketApp
             Socket sock = new Socket(_ipAddress.AddressFamily,
                 SocketType.Dgram, ProtocolType.Udp);
 
-            sock.Connect(new IPEndPoint(_ipAddress, _port));
+            sock.Connect(new IPEndPoint(_ipAddress, _listenerPort));
 
             SockMgr sockMgr = new SockMgr(sock, SocketRole.Client);
             BindingSockMgr(sockMgr);

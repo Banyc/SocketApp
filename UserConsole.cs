@@ -6,112 +6,194 @@ namespace SocketApp
 {
     public class UserConsole
     {
-        List<SockMgr> _connections = new List<SockMgr>();
+        List<SockMgr> _clients = new List<SockMgr>();
+        List<SockMgr> _listeners = new List<SockMgr>();
         SockFactory _factory = new SockFactory();
-        SocketRole _role;
         public void ConsoleEntry(string[] args)
         {
             _factory.AcceptEvent += OnAcceptEvent;
 
-            while (true)
-            {
-                Console.WriteLine("[Choose a Type]");
-                Console.WriteLine("1. TCP Server");
-                Console.WriteLine("2. TCP Client");
-                Console.WriteLine("3. UDP Server");
-                Console.WriteLine("4. UDP Client");
-
-                Console.Write("> ");
-                string sel = Console.ReadLine();
-                switch (sel)
-                {
-                    case "1":
-                        _role = SocketRole.Server;
-                        _factory.SetConfig("0.0.0.0", 11000);
-                        Socket listener = _factory.GetTcpListener();
-
-                        _factory.ServerAccept(listener);
-                        GeneralConcole();
-                        break;
-                    case "2":
-                        _role = SocketRole.Client;
-                        GeneralConcole();
-                        break;
-                    default:
-                        break;
-                }
-            }
+            GeneralConcole();
         }
 
         void OnAcceptEvent(object sender, AcceptEventArgs e)
         {
-            _connections.Add(e.Handler);
+            _clients.Add(e.Handler);
             e.Handler.SocketShutdownEvent += OnSocketShutdown;
         }
 
         void OnSocketShutdown(SockMgr source, SocketShutdownEventArgs e)
         {
-            _connections.Remove(source);
+            if (source.Role == SocketRole.Listener)
+                _listeners.Remove(source);
+            else
+                _clients.Remove(source);
         }
 
         void GeneralConcole()
         {
-            while (true)
+            bool isExit = false;
+            while (!isExit)
             {
-
                 Console.WriteLine("[General Console]");
-                Console.WriteLine("1. List all Sockets");
+                Console.WriteLine("1. List all clients");
                 Console.WriteLine("2. Interface mode");
-                if (_role == SocketRole.Client)
-                    Console.WriteLine("3. Add new connection");
+                Console.WriteLine("3. Establish new connection");
+                Console.WriteLine("4. Shutdown all");
+                Console.WriteLine("5. List all Listeners");
+                Console.WriteLine("6. Build new Listener");
+                Console.WriteLine("7. Listener mode");  // manage listeners
+                Console.WriteLine("8. Exit");
                 Console.Write("> ");
                 string sel = Console.ReadLine();
                 switch (sel)
                 {
                     case "1":
-                        int i = 0;
-                        foreach (var sockMgr in _connections)
-                        {
-                            Console.Write(string.Format("{0}\t", i));
-                            Console.WriteLine(sockMgr.GetSocket().RemoteEndPoint.ToString());
-                            ++i;
-                        }
+                        ListAllClients();
                         break;
-                    case "2":
+                    case "2":  // manage client
                         Console.WriteLine("Enter the index of the client");
                         Console.Write("> ");
                         int index = int.Parse(Console.ReadLine());
-                        InterfaceMenu(_connections[index]);
+                        InterfaceMenu(_clients[index]);
                         break;
-                    case "3":
-                        if (_role == SocketRole.Client)
-                        {
-                            Console.WriteLine("Enter server IP address");
-                            Console.Write("> ");
-                            string ipAddr = Console.ReadLine();
-                            if (ipAddr == "")
-                            {
-                                _factory.SetConfig("127.0.0.1", 11000);
-                            }
-                            else
-                            {
-                                Console.WriteLine("Enter server port");
-                                Console.Write("> ");
-                                int port = int.Parse(Console.ReadLine());
-                                _factory.SetConfig(ipAddr, port);
-                            }
-
-                            SockMgr client = _factory.GetTcpClient();
-
-                            // remaining
-                            client.SocketShutdownEvent += OnSocketShutdown;
-                            _connections.Add(client);
-                        }
+                    case "3":  // Establish new connection
+                        BuildClientConsole();
+                        break;
+                    case "4":
+                        ShutdownAll();
+                        break;
+                    case "5":
+                        ListAllListeners();
+                        break;
+                    case "6":
+                        BuildListenerConsole();
+                        break;
+                    case "7":
+                        Console.WriteLine("Enter the index of the listener");
+                        Console.Write("> ");
+                        int listenerIndex = int.Parse(Console.ReadLine());
+                        ListenerMenu(_listeners[listenerIndex]);
+                        break;
+                    case "8":
+                        ShutdownAll();
+                        isExit = true;
                         break;
                     default:
                         break;
                 }
             }
+        }
+
+        // shutdown all listeners and clients
+        void ShutdownAll()
+        {
+            while (_clients.Count > 0)
+            {
+                _clients[0].Shutdown();
+            }
+            while (_listeners.Count > 0)
+            {
+                _listeners[0].Shutdown();
+            }
+        }
+
+        void ListAllClients()
+        {
+            int i = 0;
+            foreach (var sockMgr in _clients)
+            {
+                Console.Write(string.Format("{0}\t", i));
+                Console.WriteLine(string.Format("{0}\t->\t{1}",
+                    sockMgr.GetSocket().LocalEndPoint.ToString(),
+                    sockMgr.GetSocket().RemoteEndPoint.ToString()));
+                ++i;
+            }
+        }
+
+        void ListAllListeners()
+        {
+            int i = 0;
+            foreach (var sockMgr in _listeners)
+            {
+                Console.Write(string.Format("{0}\t", i));
+                Console.WriteLine(sockMgr.GetSocket().LocalEndPoint.ToString());
+                ++i;
+            }
+        }
+
+        void BuildListenerConsole()
+        {
+            Console.WriteLine("[Build Listener]");
+            Console.WriteLine("1. TCP Server");
+            Console.WriteLine("2. UDP Server");
+
+            Console.Write("> ");
+            string sel = Console.ReadLine();
+
+            Console.WriteLine("Enter listening IP address");
+            Console.Write("> ");
+            string localIpAddr = Console.ReadLine();
+            if (localIpAddr == "")
+                localIpAddr = "0.0.0.0";
+            Console.WriteLine("Enter server port");
+            Console.Write("> ");
+            string localPortStr = Console.ReadLine();
+            int localPort;
+            if (localPortStr == "")
+                localPort = 11000;
+            else
+                localPort = int.Parse(localPortStr);
+
+            switch (sel)
+            {
+                case "1":
+                    _factory.SetConfig(localIpAddr, localPort);
+                    SockMgr listenerMgr = _factory.GetTcpListener();
+                    listenerMgr.SocketShutdownEvent += OnSocketShutdown;
+                    _factory.ServerAccept(listenerMgr);
+                    _listeners.Add(listenerMgr);
+                    break;
+                case "2":
+                    // TODO
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void BuildClientConsole()
+        {
+            Console.WriteLine("Enter server IP address");
+            Console.Write("> ");
+            string ipAddr = Console.ReadLine();
+            if (ipAddr == "")
+            {
+                _factory.SetConfig("127.0.0.1", 11000);
+            }
+            else
+            {
+                Console.WriteLine("Enter server port");
+                Console.Write("> ");
+                int remotePort = int.Parse(Console.ReadLine());
+                Console.WriteLine("Enter local port (leave blank for auto)");
+                Console.Write("> ");
+                string localPortStr = Console.ReadLine();
+                if (localPortStr == "")
+                {
+                    _factory.SetConfig(ipAddr, remotePort);
+                }
+                else
+                {
+                    _factory.SetConfig(ipAddr, remotePort, int.Parse(localPortStr));
+                }
+            }
+
+            SockMgr client = _factory.GetTcpClient();
+
+            // remaining
+            client.SocketShutdownEvent += OnSocketShutdown;
+            _clients.Add(client);
         }
 
         static void InterfaceMenu(SockMgr sockMgr)
@@ -128,6 +210,23 @@ namespace SocketApp
                     SendConsole(sockMgr);
                     break;
                 case "2":
+                    sockMgr.Shutdown();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        static void ListenerMenu(SockMgr sockMgr)
+        {
+            Console.WriteLine("[Interface Menu]");
+            Console.WriteLine("1. Close");
+
+            Console.Write("> ");
+            string sel = Console.ReadLine();
+            switch (sel)
+            {
+                case "1":
                     sockMgr.Shutdown();
                     break;
                 default:
