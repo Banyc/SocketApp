@@ -102,6 +102,13 @@ namespace SocketApp
                 // Read data from the client socket.   
                 int bytesRead = handler.EndReceive(ar);
 
+                // handle FIN
+                if (bytesRead == 0)
+                {
+                    state.Source.Shutdown();
+                    return;
+                }
+
                 if (bytesRead > 0)
                 {
                     // add to buffer manager
