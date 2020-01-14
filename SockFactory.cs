@@ -78,6 +78,34 @@ namespace SocketApp
             return sockMgr;
         }
 
+        // <https://gist.github.com/louis-e/888d5031190408775ad130dde353e0fd>
+        public SockMgr GetUdpListener()
+        {
+            Socket listener = new Socket(_ipAddress.AddressFamily,
+                SocketType.Dgram, ProtocolType.Udp);
+            
+            listener.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.ReuseAddress, true);
+            listener.Bind(new IPEndPoint(_ipAddress, _port));
+            
+            SockMgr sockMgr = new SockMgr(listener, SocketRole.Server);
+            BindingSockMgr(sockMgr);
+
+            return sockMgr;
+        }
+
+        public SockMgr GetUdpClient()
+        {
+            Socket sock = new Socket(_ipAddress.AddressFamily,
+                SocketType.Dgram, ProtocolType.Udp);
+
+            sock.Connect(new IPEndPoint(_ipAddress, _port));
+
+            SockMgr sockMgr = new SockMgr(sock, SocketRole.Client);
+            BindingSockMgr(sockMgr);
+
+            return sockMgr;
+        }
+
         private void BindingSockMgr(SockMgr sockMgr)
         {
             sockMgr.SetSerializationMethod(Serialize);
