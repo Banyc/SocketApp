@@ -145,10 +145,7 @@ namespace SocketApp
                     _socket.Shutdown(SocketShutdown.Both);
                 _socket.Close();
             }
-            catch (Exception)
-            {
-
-            }
+            catch (Exception) { }  // TODO: Specify details
 
             SocketShutdownEvent?.Invoke(this, new SocketShutdownEventArgs(true));
         }

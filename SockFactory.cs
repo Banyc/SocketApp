@@ -3,6 +3,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace SocketApp
 {
@@ -19,7 +20,14 @@ namespace SocketApp
         IPAddress _ipAddress;
         int _listenerPort = 11000;
         int _localPort = -1;  // not for listener
+        List<SockMgr> _clients;
+        List<SockMgr> _listeners;
 
+        public void SetLists(List<SockMgr> clients, List<SockMgr> listeners)
+        {
+            _clients = clients;
+            _listeners = listeners;
+        }
         public void SetConfig(string ipAddress, int remotePort, int localPort = -1)
         {
             _ipAddress = IPAddress.Parse(ipAddress);
@@ -119,7 +127,9 @@ namespace SocketApp
         private void BindingSockMgr(SockMgr sockMgr)
         {
             sockMgr.SetSerializationMethod(Serialize);
-            Responser responser = new Responser();
+            Responser responser = new Responser(_clients, _listeners);
+            if (sockMgr.Role == SocketRole.Client)
+                responser.OnSocketConnected(sockMgr);
             sockMgr.SocketReceiveEvent += responser.OnSocketReceive;
             sockMgr.StartReceive();
         }

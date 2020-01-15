@@ -1,10 +1,20 @@
 using System.Text;
 using System;
+using System.Collections.Generic;
 
 namespace SocketApp
 {
     public class Responser
     {
+        List<SockMgr> _clients;
+        List<SockMgr> _listeners;
+        
+        public Responser(List<SockMgr> clients, List<SockMgr> listeners)
+        {
+            _clients = clients;
+            _listeners = listeners;
+        }
+
         public void OnSocketReceive(SockMgr source, SocketReceiveEventArgs e)
         {
             byte[] data;
@@ -12,10 +22,24 @@ namespace SocketApp
             data = e.BufferMgr.GetAdequateBytes();
             while (data.Length > 0)
             {
+                Console.WriteLine();
+                Console.WriteLine(string.Format("[{0} -> {1}] {2}",
+                    source.GetSocket().RemoteEndPoint.ToString(),
+                    source.GetSocket().LocalEndPoint.ToString(),
+                    DateTime.Now.ToString()));
                 Console.WriteLine(Encoding.UTF8.GetString(data));
+                Console.WriteLine(string.Format("[End]"));
 
                 data = e.BufferMgr.GetAdequateBytes();
             }
+            Console.Write("> ");
+        }
+
+        public void OnSocketConnected(SockMgr source)  // provided by SockFactory
+        {
+            source.Send(string.Format("{0} -> {1}",
+                source.GetSocket().LocalEndPoint.ToString(),
+                source.GetSocket().RemoteEndPoint.ToString()));
         }
     }
 }

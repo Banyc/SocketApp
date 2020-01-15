@@ -12,7 +12,7 @@ namespace SocketApp
         public void ConsoleEntry(string[] args)
         {
             _factory.AcceptEvent += OnAcceptEvent;
-
+            _factory.SetLists(_clients, _listeners);
             GeneralConcole();
         }
 
