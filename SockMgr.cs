@@ -69,7 +69,12 @@ namespace SocketApp
 
         public void Send(object structuredData)
         {
-            byte[] serializedData = _SerializeMethod(structuredData);
+            this.Send(_SerializeMethod, structuredData);
+        }
+
+        public void Send(Func<object, byte[]> Serializer, object structuredData)
+        {
+            byte[] serializedData = Serializer(structuredData);
 
             int length = serializedData.Length;
             byte[] lengthByte = BitConverter.GetBytes(length);  // 4 Bytes
