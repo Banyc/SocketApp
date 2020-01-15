@@ -2,6 +2,12 @@
 
 A simple interactive socket. Cross-platform.
 
+## Features
+
+- Console app. Cross-platform.
+- Build the host and the client at the same time
+- Easy to setup a new Socket experiment
+
 ## Build
 
 - download dotnet SDK
