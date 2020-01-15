@@ -2,7 +2,6 @@ using System.Text;
 using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
 using System.Collections.Generic;
 
 namespace SocketApp
@@ -57,27 +56,14 @@ namespace SocketApp
 
         public void ServerAccept(SockMgr listener)
         {
-            listener.GetSocket().BeginAccept(
-                new System.AsyncCallback(AcceptCallback), listener.GetSocket());
+            listener.SocketAcceptEvent += OnSocketAccept;
+            listener.StartAccept();
         }
 
-        private void AcceptCallback(IAsyncResult ar)
+        private void OnSocketAccept(SockMgr sender, SocketAcceptEventArgs e)
         {
-            try
-            {
-                // Get the socket that handles the client request.  
-                Socket listener = (Socket)ar.AsyncState;
-                Socket handler = listener.EndAccept(ar);
-
-                SockMgr sockMgr = new SockMgr(handler, SocketRole.Client, true);
-                BindingSockMgr(sockMgr);
-
-                AcceptEvent?.Invoke(this, new AcceptEventArgs(sockMgr));
-
-                listener.BeginAccept(
-                    new System.AsyncCallback(AcceptCallback), listener);
-            }
-            catch (ObjectDisposedException) { }  // listener closed
+            BindingSockMgr(e.Handler);
+            AcceptEvent?.Invoke(this, new AcceptEventArgs(e.Handler));
         }
 
         public SockMgr GetTcpClient()

@@ -1,6 +1,7 @@
+using System.Runtime.CompilerServices;
+using System.Net.Sockets;
 using System;
 using System.Collections.Generic;
-using System.Net.Sockets;
 
 namespace SocketApp
 {
@@ -180,21 +181,50 @@ namespace SocketApp
                 Console.WriteLine("Enter local port (leave blank for auto)");
                 Console.Write("> ");
                 string localPortStr = Console.ReadLine();
-                if (localPortStr == "")
+                try
                 {
-                    _factory.SetConfig(ipAddr, remotePort);
+                    if (localPortStr == "")
+                    {
+                        _factory.SetConfig(ipAddr, remotePort);
+                    }
+                    else
+                    {
+                        _factory.SetConfig(ipAddr, remotePort, int.Parse(localPortStr));
+                    }
                 }
-                else
+                catch (SocketException ex)
                 {
-                    _factory.SetConfig(ipAddr, remotePort, int.Parse(localPortStr));
+                    switch ((SocketError)ex.ErrorCode)
+                    {
+                        case SocketError.InvalidArgument:
+                            Console.WriteLine("[Error] An invalid IP address was specified");
+                            break;
+                        default:
+                            Console.WriteLine("[Error] SocketException");
+                            break;
+                    }
                 }
             }
-
-            SockMgr client = _factory.GetTcpClient();
-
-            // remaining
-            client.SocketShutdownBeginEvent += OnSocketShutdownBegin;
-            _clients.Add(client);
+            try
+            {
+                SockMgr client;
+                client = _factory.GetTcpClient();
+                // remaining
+                client.SocketShutdownBeginEvent += OnSocketShutdownBegin;
+                _clients.Add(client);
+            }
+            catch (SocketException ex)
+            {
+                switch ((SocketError)ex.ErrorCode)
+                {
+                    case SocketError.ConnectionRefused:
+                        Console.WriteLine("[Error] Connection Refused. Can not connect because the target machine has actively declined the connection.");
+                        break;
+                    default:
+                        Console.WriteLine("[Error] SocketException");
+                        break;
+                }
+            }
         }
 
         static void InterfaceMenu(SockMgr sockMgr)
