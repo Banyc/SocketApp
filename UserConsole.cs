@@ -19,10 +19,10 @@ namespace SocketApp
         void OnAcceptEvent(object sender, AcceptEventArgs e)
         {
             _clients.Add(e.Handler);
-            e.Handler.SocketShutdownEvent += OnSocketShutdown;
+            e.Handler.SocketShutdownBeginEvent += OnSocketShutdownBegin;
         }
 
-        void OnSocketShutdown(SockMgr source, SocketShutdownEventArgs e)
+        void OnSocketShutdownBegin(SockMgr source, SocketShutdownBeginEventArgs e)
         {
             if (source.Role == SocketRole.Listener)
                 _listeners.Remove(source);
@@ -104,6 +104,7 @@ namespace SocketApp
             foreach (var sockMgr in _clients)
             {
                 Console.Write(string.Format("{0}\t", i));
+                Console.Write(string.Format("{0}\t", sockMgr.IsHost.ToString()));  // if it is a host
                 Console.WriteLine(string.Format("{0}\t->\t{1}",
                     sockMgr.GetSocket().LocalEndPoint.ToString(),
                     sockMgr.GetSocket().RemoteEndPoint.ToString()));
@@ -150,7 +151,7 @@ namespace SocketApp
                 case "1":
                     _factory.SetConfig(localIpAddr, localPort);
                     SockMgr listenerMgr = _factory.GetTcpListener();
-                    listenerMgr.SocketShutdownEvent += OnSocketShutdown;
+                    listenerMgr.SocketShutdownBeginEvent += OnSocketShutdownBegin;
                     _factory.ServerAccept(listenerMgr);
                     _listeners.Add(listenerMgr);
                     break;
@@ -192,7 +193,7 @@ namespace SocketApp
             SockMgr client = _factory.GetTcpClient();
 
             // remaining
-            client.SocketShutdownEvent += OnSocketShutdown;
+            client.SocketShutdownBeginEvent += OnSocketShutdownBegin;
             _clients.Add(client);
         }
 
@@ -201,6 +202,7 @@ namespace SocketApp
             Console.WriteLine("[Interface Menu]");
             Console.WriteLine("1. Send");
             Console.WriteLine("2. Close");
+            Console.WriteLine("3. Is Host?");
 
             Console.Write("> ");
             string sel = Console.ReadLine();
@@ -211,6 +213,9 @@ namespace SocketApp
                     break;
                 case "2":
                     sockMgr.Shutdown();
+                    break;
+                case "3":
+                    Console.WriteLine(sockMgr.IsHost.ToString());
                     break;
                 default:
                     break;

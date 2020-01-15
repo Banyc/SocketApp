@@ -12,9 +12,9 @@ namespace SocketApp
         Client,
     }
 
-    public class SocketShutdownEventArgs
+    public class SocketShutdownBeginEventArgs
     {
-        public SocketShutdownEventArgs(bool isShutdown) { IsShutdown = isShutdown; }
+        public SocketShutdownBeginEventArgs(bool isShutdown) { IsShutdown = isShutdown; }
         public bool IsShutdown { get; }
     }
 
@@ -40,20 +40,22 @@ namespace SocketApp
 
     public class SockMgr
     {
-        public delegate void SocketShutdownEventHandler(SockMgr source, SocketShutdownEventArgs e);
-        public event SocketShutdownEventHandler SocketShutdownEvent;
+        public delegate void SocketShutdownBeginEventHandler(SockMgr source, SocketShutdownBeginEventArgs e);
+        public event SocketShutdownBeginEventHandler SocketShutdownBeginEvent;
         public delegate void SocketReceiveEventHandler(SockMgr source, SocketReceiveEventArgs e);
         public event SocketReceiveEventHandler SocketReceiveEvent;
         Socket _socket;
         public SocketRole Role { get; }
+        public bool IsHost { get; }  // is the socket is born from a listener or is itself a listener
         Func<object, byte[]> _SerializeMethod;
         // public BufferMgr _bufferMgr;
         private bool _isReceiveStart = false;  // WORKAROUND
 
-        public SockMgr(Socket s, SocketRole r)
+        public SockMgr(Socket s, SocketRole r, bool isHost)
         {
             _socket = s;
             this.Role = r;
+            this.IsHost = isHost;
             _SerializeMethod = null;
         }
 
@@ -144,6 +146,8 @@ namespace SocketApp
 
         public void Shutdown()
         {
+            SocketShutdownBeginEvent?.Invoke(this, new SocketShutdownBeginEventArgs(true));
+
             try
             {
                 if (this.Role == SocketRole.Client)
@@ -151,8 +155,6 @@ namespace SocketApp
                 _socket.Close();
             }
             catch (Exception) { }  // TODO: Specify details
-
-            SocketShutdownEvent?.Invoke(this, new SocketShutdownEventArgs(true));
         }
     }
 }

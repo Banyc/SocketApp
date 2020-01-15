@@ -22,13 +22,17 @@ namespace SocketApp
             data = e.BufferMgr.GetAdequateBytes();
             while (data.Length > 0)
             {
+                // print:
+                // [Message] remote -> local | time
+                // data
+                // [MessageEnd]
                 Console.WriteLine();
-                Console.WriteLine(string.Format("[{0} -> {1}] {2}",
+                Console.WriteLine(string.Format("[Message] {0} -> {1} | {2}",
                     source.GetSocket().RemoteEndPoint.ToString(),
                     source.GetSocket().LocalEndPoint.ToString(),
                     DateTime.Now.ToString()));
                 Console.WriteLine(Encoding.UTF8.GetString(data));
-                Console.WriteLine(string.Format("[End]"));
+                Console.WriteLine(string.Format("[MessageEnd]"));
 
                 data = e.BufferMgr.GetAdequateBytes();
             }
@@ -37,9 +41,24 @@ namespace SocketApp
 
         public void OnSocketConnected(SockMgr source)  // provided by SockFactory
         {
+            // print: [Connect] local -> remote
+            Console.WriteLine(string.Format("[Connect] {0} -> {1}",
+                source.GetSocket().LocalEndPoint.ToString(),
+                source.GetSocket().RemoteEndPoint.ToString()));
+            Console.Write("> ");
+            // send connection info to peer
             source.Send(string.Format("{0} -> {1}",
                 source.GetSocket().LocalEndPoint.ToString(),
                 source.GetSocket().RemoteEndPoint.ToString()));
+        }
+
+        public void OnSocketShutdownBegin(SockMgr source, SocketShutdownBeginEventArgs e)
+        {
+            // print: [Shutdown] local -> remote
+            Console.WriteLine(string.Format("[Shutdown] {0} -> {1}",
+                source.GetSocket().LocalEndPoint.ToString(),
+                source.GetSocket().RemoteEndPoint.ToString()));
+            Console.Write("> ");
         }
     }
 }

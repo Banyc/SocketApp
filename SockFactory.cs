@@ -51,7 +51,7 @@ namespace SocketApp
             listener.Bind(localEndPoint);
             listener.Listen(4);
 
-            SockMgr sockMgr = new SockMgr(listener, SocketRole.Listener);
+            SockMgr sockMgr = new SockMgr(listener, SocketRole.Listener, true);
             return sockMgr;
         }
 
@@ -69,7 +69,7 @@ namespace SocketApp
                 Socket listener = (Socket)ar.AsyncState;
                 Socket handler = listener.EndAccept(ar);
 
-                SockMgr sockMgr = new SockMgr(handler, SocketRole.Client);
+                SockMgr sockMgr = new SockMgr(handler, SocketRole.Client, true);
                 BindingSockMgr(sockMgr);
 
                 AcceptEvent?.Invoke(this, new AcceptEventArgs(sockMgr));
@@ -90,7 +90,7 @@ namespace SocketApp
 
             sock.Connect(new IPEndPoint(_ipAddress, _listenerPort));
 
-            SockMgr sockMgr = new SockMgr(sock, SocketRole.Client);
+            SockMgr sockMgr = new SockMgr(sock, SocketRole.Client, false);
             BindingSockMgr(sockMgr);
 
             return sockMgr;
@@ -105,7 +105,7 @@ namespace SocketApp
             listener.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.ReuseAddress, true);
             listener.Bind(new IPEndPoint(_ipAddress, _listenerPort));
 
-            SockMgr sockMgr = new SockMgr(listener, SocketRole.Listener);
+            SockMgr sockMgr = new SockMgr(listener, SocketRole.Listener, true);
             BindingSockMgr(sockMgr);
 
             return sockMgr;
@@ -118,7 +118,7 @@ namespace SocketApp
 
             sock.Connect(new IPEndPoint(_ipAddress, _listenerPort));
 
-            SockMgr sockMgr = new SockMgr(sock, SocketRole.Client);
+            SockMgr sockMgr = new SockMgr(sock, SocketRole.Client, false);
             BindingSockMgr(sockMgr);
 
             return sockMgr;
@@ -130,6 +130,7 @@ namespace SocketApp
             Responser responser = new Responser(_clients, _listeners);
             if (sockMgr.Role == SocketRole.Client)
                 responser.OnSocketConnected(sockMgr);
+            sockMgr.SocketShutdownBeginEvent += responser.OnSocketShutdownBegin;
             sockMgr.SocketReceiveEvent += responser.OnSocketReceive;
             sockMgr.StartReceive();
         }
