@@ -17,8 +17,9 @@ namespace SocketApp
     }
     public class SocketConnectEventArgs
     {
-        public SocketConnectEventArgs(SockMgr handler) { Handler = handler; }
+        public SocketConnectEventArgs(ConnectStateObject state, SockMgr handler) { State = state; Handler = handler; }
         public SockMgr Handler { get; }
+        public ConnectStateObject State { get; }
     }
 
     public class SocketShutdownBeginEventArgs
@@ -52,13 +53,14 @@ namespace SocketApp
         public Socket workSocket = null;
         public IPEndPoint endPoint = null;
         public int timesToTry = 1;
+        public SocketError errorType;
     }
 
     public class SockMgr
     {
         public delegate void SocketAcceptEventHandler(SockMgr sender, SocketAcceptEventArgs e);
         public event SocketAcceptEventHandler SocketAcceptEvent;
-        public delegate void SocketConnectEventHandler(SockMgr sender, SocketConnectEventArgs e);
+        public delegate void SocketConnectEventHandler(object sender, SocketConnectEventArgs e);
         public event SocketConnectEventHandler SocketConnectEvent;
         public delegate void SocketShutdownBeginEventHandler(SockMgr source, SocketShutdownBeginEventArgs e);
         public event SocketShutdownBeginEventHandler SocketShutdownBeginEvent;
@@ -67,7 +69,7 @@ namespace SocketApp
         Socket _socket;
         public SocketRole Role { get; }
         public bool IsHost { get; }  // is the socket is born from a listener or is itself a listener
-        public bool IsConnected { get; } = false;  // has the socket established a connection
+        public bool IsConnected = false;  // has the socket established a connection
         Func<object, byte[]> _SerializeMethod;
         // public BufferMgr _bufferMgr;
         private bool _isReceiveStart = false;  // WORKAROUND
@@ -149,17 +151,21 @@ namespace SocketApp
             {
                 state.workSocket.EndConnect(ar);
                 // BindingSockMgr(sockMgr);  // handled by factory
-
-                SocketConnectEvent?.Invoke(this, new SocketConnectEventArgs(this));
+                this.IsConnected = true;
             }
             catch (SocketException ex)
             {
+                state.errorType = (SocketError)ex.ErrorCode;
                 --state.timesToTry;
                 if (state.timesToTry <= 0)
                     return;
 
                 state.workSocket.BeginConnect(state.endPoint,
                     new System.AsyncCallback(ConnectCallback), state);
+            }
+            finally
+            {
+                SocketConnectEvent?.Invoke(this, new SocketConnectEventArgs(state, this));
             }
         }
 

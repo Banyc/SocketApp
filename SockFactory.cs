@@ -16,6 +16,7 @@ namespace SocketApp
     {
         public delegate void AcceptEventHandler(SockFactory sender, AcceptEventArgs e);
         public event AcceptEventHandler AcceptEvent;
+        public event SockMgr.SocketConnectEventHandler SocketConnectEvent;
         IPAddress _ipAddress;
         int _listenerPort = 11000;
         int _localPort = -1;  // not for listener
@@ -64,6 +65,30 @@ namespace SocketApp
         {
             BindingSockMgr(e.Handler);
             AcceptEvent?.Invoke(this, new AcceptEventArgs(e.Handler));
+        }
+
+        public void BuildTcpClient(int timesToTry)
+        {
+            Socket sock = new Socket(_ipAddress.AddressFamily,
+                SocketType.Stream, ProtocolType.Tcp);
+
+            if (_localPort >= 0)
+                sock.Bind(new IPEndPoint(IPAddress.Any, _localPort));
+
+            SockMgr sockMgr = new SockMgr(sock, SocketRole.Client, false);
+            sockMgr.SocketConnectEvent += OnSocketConnect;
+            sockMgr.StartConnect(new IPEndPoint(_ipAddress, _listenerPort), timesToTry);
+        }
+
+        private void OnSocketConnect(object sender, SocketConnectEventArgs e)
+        {
+            if (!e.Handler.IsConnected)
+            {
+                SocketConnectEvent?.Invoke(this, e);
+                return;
+            }
+            BindingSockMgr(e.Handler);
+            SocketConnectEvent?.Invoke(this, e);
         }
 
         public SockMgr GetTcpClient()

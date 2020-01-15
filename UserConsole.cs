@@ -13,6 +13,7 @@ namespace SocketApp
         public void ConsoleEntry(string[] args)
         {
             _factory.AcceptEvent += OnAcceptEvent;
+            _factory.SocketConnectEvent += OnSocketConnect;
             _factory.SetLists(_clients, _listeners);
             GeneralConcole();
         }
@@ -20,6 +21,26 @@ namespace SocketApp
         void OnAcceptEvent(object sender, AcceptEventArgs e)
         {
             _clients.Add(e.Handler);
+            Console.WriteLine(string.Format("[Accept] {0} -> {1}",
+                e.Handler.GetSocket().LocalEndPoint.ToString(),
+                e.Handler.GetSocket().RemoteEndPoint.ToString()));
+            Console.Write("> ");
+            e.Handler.SocketShutdownBeginEvent += OnSocketShutdownBegin;
+        }
+
+        void OnSocketConnect(object sender, SocketConnectEventArgs e)
+        {
+            if (!e.Handler.IsConnected)
+            {
+                Console.WriteLine(string.Format("[Connect] Failed | {0} times left | {1}", e.State.timesToTry, e.State.errorType.ToString()));
+                Console.Write("> ");
+                return;
+            }
+            _clients.Add(e.Handler);
+            Console.WriteLine(string.Format("[Connect] {0} -> {1}",
+                e.Handler.GetSocket().LocalEndPoint.ToString(),
+                e.Handler.GetSocket().RemoteEndPoint.ToString()));
+            Console.Write("> ");
             e.Handler.SocketShutdownBeginEvent += OnSocketShutdownBegin;
         }
 
@@ -126,6 +147,7 @@ namespace SocketApp
 
         void BuildListenerConsole()
         {
+            // collect config
             Console.WriteLine("[Build Listener]");
             Console.WriteLine("1. TCP Server");
             Console.WriteLine("2. UDP Server");
@@ -133,12 +155,12 @@ namespace SocketApp
             Console.Write("> ");
             string sel = Console.ReadLine();
 
-            Console.WriteLine("Enter listening IP address");
+            Console.WriteLine("Enter listening IP address (leave blank for 0.0.0.0)");
             Console.Write("> ");
             string localIpAddr = Console.ReadLine();
             if (localIpAddr == "")
                 localIpAddr = "0.0.0.0";
-            Console.WriteLine("Enter server port");
+            Console.WriteLine("Enter server port (leave blank for 11000)");
             Console.Write("> ");
             string localPortStr = Console.ReadLine();
             int localPort;
@@ -146,7 +168,7 @@ namespace SocketApp
                 localPort = 11000;
             else
                 localPort = int.Parse(localPortStr);
-
+            // begin to build
             switch (sel)
             {
                 case "1":
@@ -166,12 +188,15 @@ namespace SocketApp
 
         void BuildClientConsole()
         {
-            Console.WriteLine("Enter server IP address");
+            // collecting config
+            Console.WriteLine("Enter server IP address (leave blank for 127.0.0.1:11000)");
             Console.Write("> ");
             string ipAddr = Console.ReadLine();
+            int timesToTry = -1;
             if (ipAddr == "")
             {
                 _factory.SetConfig("127.0.0.1", 11000);
+                timesToTry = 1;
             }
             else
             {
@@ -181,6 +206,14 @@ namespace SocketApp
                 Console.WriteLine("Enter local port (leave blank for auto)");
                 Console.Write("> ");
                 string localPortStr = Console.ReadLine();
+                Console.WriteLine("Enter how many times to try (leave blank for trying once)");
+                Console.Write("> ");
+                string timesToTryStr = Console.ReadLine();
+                if (timesToTryStr == "")
+                    timesToTry = 1;
+                else
+                    timesToTry = int.Parse(timesToTryStr);
+
                 try
                 {
                     if (localPortStr == "")
@@ -205,26 +238,33 @@ namespace SocketApp
                     }
                 }
             }
-            try
-            {
-                SockMgr client;
-                client = _factory.GetTcpClient();
-                // remaining
-                client.SocketShutdownBeginEvent += OnSocketShutdownBegin;
-                _clients.Add(client);
-            }
-            catch (SocketException ex)
-            {
-                switch ((SocketError)ex.ErrorCode)
+
+            // begin to build
+            if (timesToTry == 1)
+                try
                 {
-                    case SocketError.ConnectionRefused:
-                        Console.WriteLine("[Error] Connection Refused. Can not connect because the target machine has actively declined the connection.");
-                        break;
-                    default:
-                        Console.WriteLine("[Error] SocketException");
-                        break;
+                    SockMgr client;
+                    client = _factory.GetTcpClient();
+                    // remaining
+                    client.SocketShutdownBeginEvent += OnSocketShutdownBegin;
+                    _clients.Add(client);
                 }
-            }
+                catch (SocketException ex)
+                {
+                    switch ((SocketError)ex.ErrorCode)
+                    {
+                        case SocketError.ConnectionRefused:
+                            Console.WriteLine("[Error] Connection Refused. Can not connect because the target machine has actively declined the connection.");
+                            break;
+                        default:
+                            Console.WriteLine("[Error] SocketException");
+                            break;
+                    }
+                }
+            else if (timesToTry > 1)
+                _factory.BuildTcpClient(timesToTry);
+            else
+                return;
         }
 
         static void InterfaceMenu(SockMgr sockMgr)
