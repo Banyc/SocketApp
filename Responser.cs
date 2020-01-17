@@ -39,8 +39,16 @@ namespace SocketApp
             Console.Write("> ");
         }
 
-        public void OnSocketConnected(object sender, SocketConnectEventArgs e)
+        // the connection might be a failed one
+        public void OnSocketConnect(object sender, SocketConnectEventArgs e)
         {
+            if (!e.Handler.IsConnected)  // connection failed
+            {
+                Console.WriteLine(string.Format("[Connect] Failed | {0} times left | {1}", e.State.timesToTry, e.State.errorType.ToString()));
+                Console.Write("> ");
+                return;
+            }
+            _clients.Add(e.Handler);
             // print: [Connect] local -> remote
             Console.WriteLine(string.Format("[Connect] {0} -> {1}",
                 e.Handler.GetSocket().LocalEndPoint.ToString(),
@@ -54,6 +62,7 @@ namespace SocketApp
 
         public void OnSocketAccept(SockMgr sender, SocketAcceptEventArgs e)  // from SockFactory
         {
+            _clients.Add(e.Handler);
             // print: [Accept] local -> remote
             Console.WriteLine(string.Format("[Accept] {0} -> {1}",
                 e.Handler.GetSocket().LocalEndPoint.ToString(),

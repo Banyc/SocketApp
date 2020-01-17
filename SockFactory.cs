@@ -140,7 +140,7 @@ namespace SocketApp
                 sockMgr.SetSerializationMethod(Serialize);
             Responser responser = new Responser(_clients, _listeners);
             if (sockMgr.Role == SocketRole.Client)
-                sockMgr.SocketConnectEvent += responser.OnSocketConnected;
+                sockMgr.SocketConnectEvent += responser.OnSocketConnect;
             sockMgr.SocketShutdownBeginEvent += responser.OnSocketShutdownBegin;
             if (sockMgr.Role == SocketRole.Client)
             {

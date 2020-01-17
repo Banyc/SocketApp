@@ -19,21 +19,9 @@ namespace SocketApp
             GeneralConcole();
         }
 
-        void OnAcceptEvent(object sender, AcceptEventArgs e)
-        {
-            _clients.Add(e.Handler);
-        }
+        void OnAcceptEvent(object sender, AcceptEventArgs e) { }
 
-        void OnSocketConnect(object sender, SocketConnectEventArgs e)
-        {
-            if (!e.Handler.IsConnected)
-            {
-                Console.WriteLine(string.Format("[Connect] Failed | {0} times left | {1}", e.State.timesToTry, e.State.errorType.ToString()));
-                Console.Write("> ");
-                return;
-            }
-            _clients.Add(e.Handler);
-        }
+        void OnSocketConnect(object sender, SocketConnectEventArgs e) { }
 
         void GeneralConcole()
         {
