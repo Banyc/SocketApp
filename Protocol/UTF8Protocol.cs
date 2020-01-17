@@ -7,24 +7,24 @@ namespace SocketApp.Protocol
 
     }
 
-    public class UTF8Protocol : IProtocol<byte[], string, UTF8ProtocolState>
+    public class UTF8Protocol : IProtocol
     {
-        public byte[] GetDown(string arg)
+        public object GetDown(object arg)
         {
-            return Encoding.UTF8.GetBytes(arg);
+            return Encoding.UTF8.GetBytes((string)arg);
         }
 
-        public UTF8ProtocolState GetState()
+        public object GetState()
         {
             throw new System.NotImplementedException();
         }
 
-        public string GoUp(byte[] arg)
+        public object GoUp(object arg)
         {
-            return Encoding.UTF8.GetString(arg);
+            return Encoding.UTF8.GetString((byte[])arg);
         }
 
-        public void SetState(UTF8ProtocolState state)
+        public void SetState(object state)
         {
             throw new System.NotImplementedException();
         }

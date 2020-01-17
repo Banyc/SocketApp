@@ -2,30 +2,30 @@ using System.Linq;
 using System.Collections.Generic;
 namespace SocketApp.Protocol
 {
-    public class TextProtocolState
+    public class FullProtocolStacksState
     {
-        public List<IProtocol<object, object, object>> middleProtocols = new List<IProtocol<object, object, object>>();
+        public List<IProtocol> middleProtocols = new List<IProtocol>();
     }
 
-    public class TextProtocol : IProtocol<byte[], string, TextProtocolState>
+    public class FullProtocolStacks : IProtocol
     {
-        private TextProtocolState _state = new TextProtocolState();
-        public byte[] GetDown(string arg)
+        private FullProtocolStacksState _state = new FullProtocolStacksState();
+        public object GetDown(object arg)
         {
             object tmp = arg;
             foreach (var proto in _state.middleProtocols)
             {
                 tmp = proto.GetDown(tmp);
             }
-            return (byte[])tmp;
+            return (object)tmp;
         }
 
-        public TextProtocolState GetState()
+        public object GetState()
         {
             return _state;
         }
 
-        public string GoUp(byte[] arg)
+        public object GoUp(object arg)
         {
             object tmp = arg;
             foreach (var proto in _state.middleProtocols.AsEnumerable().Reverse())
@@ -35,9 +35,9 @@ namespace SocketApp.Protocol
             return (string)tmp;
         }
 
-        public void SetState(TextProtocolState state)
+        public void SetState(object state)
         {
-            _state = state;
+            _state = (FullProtocolStacksState)state;
         }
     }
 }

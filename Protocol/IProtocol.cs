@@ -1,10 +1,10 @@
 namespace SocketApp.Protocol
 {
-    public interface IProtocol<TypeOfLowLayer, TypeOfHighLayer, StateObject>
+    public interface IProtocol
     {
-        void SetState(StateObject state);
-        StateObject GetState();
-        TypeOfLowLayer GetDown(TypeOfHighLayer arg);
-        TypeOfHighLayer GoUp(TypeOfLowLayer arg);
+        void SetState(object state);
+        object GetState();
+        object GetDown(object arg);
+        object GoUp(object arg);
     }
 }

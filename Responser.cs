@@ -7,16 +7,22 @@ namespace SocketApp
     // passively respond to socket events
     public class Responser
     {
-        List<SockMgr> _clients;
-        List<SockMgr> _listeners;
+        SockList _sockList;
+
+        Func<byte[], object> _DeserializeMethod;
         
-        public Responser(List<SockMgr> clients, List<SockMgr> listeners)
+        public Responser(SockList sockList, Func<byte[], object> DeserializeMethod)
         {
-            _clients = clients;
-            _listeners = listeners;
+            _sockList = sockList;
+            _DeserializeMethod = DeserializeMethod;
         }
 
-        public void OnSocketReceive(SockMgr source, SocketReceiveEventArgs e)
+        public void SetDeserializeMethod(Func<byte[], object> DeserializeMethod)
+        {
+            _DeserializeMethod = DeserializeMethod;
+        }
+
+        public void OnSockMgrReceive(Object sender, SockMgrReceiveEventArgs e)
         {
             byte[] data;
 
@@ -29,10 +35,10 @@ namespace SocketApp
                 // [MessageEnd]
                 Console.WriteLine();
                 Console.WriteLine(string.Format("[Message] {0} -> {1} | {2}",
-                    source.GetSocket().RemoteEndPoint.ToString(),
-                    source.GetSocket().LocalEndPoint.ToString(),
+                    e.Handler.GetSockBase().GetSocket().RemoteEndPoint.ToString(),
+                    e.Handler.GetSockBase().GetSocket().LocalEndPoint.ToString(),
                     DateTime.Now.ToString()));
-                Console.WriteLine(Encoding.UTF8.GetString(data));
+                Console.WriteLine((string)_DeserializeMethod(data));
                 Console.WriteLine(string.Format("[MessageEnd]"));
 
                 data = e.BufferMgr.GetAdequateBytes();
@@ -41,55 +47,55 @@ namespace SocketApp
         }
 
         // the connection might be a failed one
-        public void OnSocketConnect(object sender, SocketConnectEventArgs e)
+        public void OnSockMgrConnect(Object sender, SockMgrConnectEventArgs e)
         {
-            if (!e.Handler.IsConnected)  // connection failed
+            if (!e.Handler.GetSockBase().IsConnected)  // connection failed
             {
                 Console.WriteLine(string.Format("[Connect] Failed | {0} times left | {1}", e.State.timesToTry, e.State.errorType.ToString()));
                 Console.Write("> ");
                 return;
             }
-            _clients.Add(e.Handler);
+            _sockList.Clients.Add(e.Handler);
             // print: [Connect] local -> remote
             Console.WriteLine(string.Format("[Connect] {0} -> {1}",
-                e.Handler.GetSocket().LocalEndPoint.ToString(),
-                e.Handler.GetSocket().RemoteEndPoint.ToString()));
+                e.Handler.GetSockBase().GetSocket().LocalEndPoint.ToString(),
+                e.Handler.GetSockBase().GetSocket().RemoteEndPoint.ToString()));
             Console.Write("> ");
             // send connection info to peer
             e.Handler.Send(string.Format("{0} -> {1}",
-                e.Handler.GetSocket().LocalEndPoint.ToString(),
-                e.Handler.GetSocket().RemoteEndPoint.ToString()));
+                e.Handler.GetSockBase().GetSocket().LocalEndPoint.ToString(),
+                e.Handler.GetSockBase().GetSocket().RemoteEndPoint.ToString()));
         }
 
-        public void OnSocketAccept(SockMgr sender, SocketAcceptEventArgs e)  // from SockFactory
+        public void OnSockMgrAccept(Object sender, SockMgrAcceptEventArgs e)  // from SockFactory
         {
-            _clients.Add(e.Handler);
+            _sockList.Clients.Add(e.Handler);
             // print: [Accept] local -> remote
             Console.WriteLine(string.Format("[Accept] {0} -> {1}",
-                e.Handler.GetSocket().LocalEndPoint.ToString(),
-                e.Handler.GetSocket().RemoteEndPoint.ToString()));
+                e.Handler.GetSockBase().GetSocket().LocalEndPoint.ToString(),
+                e.Handler.GetSockBase().GetSocket().RemoteEndPoint.ToString()));
             Console.Write("> ");
             // send connection info to peer
             e.Handler.Send(string.Format("{0} -> {1}",
-                e.Handler.GetSocket().LocalEndPoint.ToString(),
-                e.Handler.GetSocket().RemoteEndPoint.ToString()));
+                e.Handler.GetSockBase().GetSocket().LocalEndPoint.ToString(),
+                e.Handler.GetSockBase().GetSocket().RemoteEndPoint.ToString()));
         }
 
-        public void OnSocketShutdownBegin(SockMgr source, SocketShutdownBeginEventArgs e)
+        public void OnSockMgrShutdownBegin(Object sender, SockMgrShutdownBeginEventArgs e)
         {
-            if (source.Role == SocketRole.Listener)
-                _listeners.Remove(source);
+            if (e.Handler.GetSockBase().Role == SocketRole.Listener)
+                _sockList.Listeners.Remove(e.Handler);
             else
-                _clients.Remove(source);
+                _sockList.Clients.Remove(e.Handler);
 
             // print: [Shutdown] local -> remote
-            if (source.Role == SocketRole.Client)
+            if (e.Handler.GetSockBase().Role == SocketRole.Client)
                 Console.WriteLine(string.Format("[Shutdown] {0} -> {1}",
-                    source.GetSocket().LocalEndPoint.ToString(),
-                    source.GetSocket().RemoteEndPoint.ToString()));
-            if (source.Role == SocketRole.Listener)
+                    e.Handler.GetSockBase().GetSocket().LocalEndPoint.ToString(),
+                    e.Handler.GetSockBase().GetSocket().RemoteEndPoint.ToString()));
+            if (e.Handler.GetSockBase().Role == SocketRole.Listener)
                 Console.WriteLine(string.Format("[Shutdown] {0} <- *",
-                    source.GetSocket().LocalEndPoint.ToString()));
+                    e.Handler.GetSockBase().GetSocket().LocalEndPoint.ToString()));
             Console.Write("> ");
         }
     }
