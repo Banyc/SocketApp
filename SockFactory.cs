@@ -5,12 +5,6 @@ using System.Collections.Generic;
 
 namespace SocketApp
 {
-    public class AcceptEventArgs
-    {
-        public AcceptEventArgs(SockMgr handler) { Handler = handler; }
-        public SockMgr Handler { get; }
-    }
-
     // build SockMgr and connect it to Responser
     public class SockFactory
     {
