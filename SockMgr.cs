@@ -56,6 +56,7 @@ namespace SocketApp
         public SocketError errorType;
     }
 
+    // socket manager to provide basic asynchronous interface of system socket
     public class SockMgr
     {
         public delegate void SocketAcceptEventHandler(SockMgr sender, SocketAcceptEventArgs e);

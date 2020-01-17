@@ -1,10 +1,10 @@
-using System.Runtime.CompilerServices;
 using System.Net.Sockets;
 using System;
 using System.Collections.Generic;
 
 namespace SocketApp
 {
+    // Actively raise some operations to socket
     public class UserConsole
     {
         List<SockMgr> _clients = new List<SockMgr>();
@@ -12,18 +12,13 @@ namespace SocketApp
         SockFactory _factory = new SockFactory();
         public void ConsoleEntry(string[] args)
         {
-            _factory.AcceptEvent += OnAcceptEvent;
-            _factory.SocketConnectEvent += OnSocketConnect;
             _clients = _factory.GetClientList();
             _listeners = _factory.GetListenerList();
             GeneralConcole();
         }
 
-        void OnAcceptEvent(object sender, AcceptEventArgs e) { }
-
-        void OnSocketConnect(object sender, SocketConnectEventArgs e) { }
-
-        void GeneralConcole()
+        // notice: this is a workaround solution
+        private void GeneralConcole()
         {
             bool isExit = false;
             while (!isExit)

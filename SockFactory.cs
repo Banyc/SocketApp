@@ -1,5 +1,4 @@
 using System.Text;
-using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Collections.Generic;
@@ -12,11 +11,9 @@ namespace SocketApp
         public SockMgr Handler { get; }
     }
 
+    // build SockMgr and connect it to Responser
     public class SockFactory
     {
-        public delegate void AcceptEventHandler(SockFactory sender, AcceptEventArgs e);
-        public event AcceptEventHandler AcceptEvent;
-        public event SockMgr.SocketConnectEventHandler SocketConnectEvent;
         IPAddress _ipAddress;
         int _listenerPort = 11000;
         int _localPort = -1;  // not for listener
@@ -82,7 +79,6 @@ namespace SocketApp
         {
             Responser responser = InitSockMgr(e.Handler);
             responser.OnSocketAccept(sender, e);
-            AcceptEvent?.Invoke(this, new AcceptEventArgs(e.Handler));
         }
 
         public void BuildTcpClient(int timesToTry)
@@ -95,13 +91,7 @@ namespace SocketApp
 
             SockMgr sockMgr = new SockMgr(sock, SocketRole.Client, false);
             InitSockMgr(sockMgr);
-            sockMgr.SocketConnectEvent += OnSocketConnect;
             sockMgr.StartConnect(new IPEndPoint(_ipAddress, _listenerPort), timesToTry);
-        }
-
-        private void OnSocketConnect(object sender, SocketConnectEventArgs e)
-        {
-            SocketConnectEvent?.Invoke(this, e);
         }
 
         // <https://gist.github.com/louis-e/888d5031190408775ad130dde353e0fd>

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 namespace SocketApp
 {
+    // passively respond to socket events
     public class Responser
     {
         List<SockMgr> _clients;
