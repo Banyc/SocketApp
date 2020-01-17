@@ -34,16 +34,11 @@ namespace SocketApp
         {
             return _listeners;
         }
-        public void SetConfig(string ipAddress, int remotePort, int localPort = -1)
+        public void SetConfig(string ipAddress, int remotePort, int localPort = -1)  // TODO: add Protocol
         {
             _ipAddress = IPAddress.Parse(ipAddress);
             _listenerPort = remotePort;
             _localPort = localPort;
-        }
-
-        public void SetProtocol()
-        {
-            // TODO
         }
 
         public SockMgr GetTcpListener()

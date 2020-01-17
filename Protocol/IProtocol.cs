@@ -1,6 +1,6 @@
 namespace SocketApp.Protocol
 {
-    public interface IProtocol<TypeOfHighLayer, TypeOfLowLayer, StateObject>
+    public interface IProtocol<TypeOfLowLayer, TypeOfHighLayer, StateObject>
     {
         void SetState(StateObject state);
         StateObject GetState();
