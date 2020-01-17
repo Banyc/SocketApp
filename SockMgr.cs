@@ -107,7 +107,7 @@ namespace SocketApp
             _socket.Send(serializedData);  // send data
         }
 
-        // TODO: migrate async Accept from SockFactory
+        // async Accept
         public void StartAccept()
         {
             _socket.BeginAccept(
@@ -122,7 +122,6 @@ namespace SocketApp
                 Socket handler = listener.EndAccept(ar);
 
                 SockMgr sockMgr = new SockMgr(handler, SocketRole.Client, true);
-                // BindingSockMgr(sockMgr);  // handled by factory
 
                 SocketAcceptEvent?.Invoke(this, new SocketAcceptEventArgs(sockMgr));
 
@@ -132,7 +131,7 @@ namespace SocketApp
             catch (ObjectDisposedException) { }  // listener closed
         }
 
-        // TODO: migrate async Connect from SockFactory
+        // async Connect
         public void StartConnect(IPEndPoint ep, int timesToTry)
         {
             if (this.IsConnected == true)
@@ -150,7 +149,6 @@ namespace SocketApp
             try
             {
                 state.workSocket.EndConnect(ar);
-                // BindingSockMgr(sockMgr);  // handled by factory
                 this.IsConnected = true;
             }
             catch (SocketException ex)

@@ -12,10 +12,7 @@ namespace SocketApp
 
         List<byte> _buffer = new List<byte>();
 
-        public BufferMgr()
-        {
-            
-        }
+        public BufferMgr() { }
 
         public void AddBytes(Byte[] bs, int length)
         {

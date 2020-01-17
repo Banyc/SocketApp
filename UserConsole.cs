@@ -14,7 +14,8 @@ namespace SocketApp
         {
             _factory.AcceptEvent += OnAcceptEvent;
             _factory.SocketConnectEvent += OnSocketConnect;
-            _factory.SetLists(_clients, _listeners);
+            _clients = _factory.GetClientList();
+            _listeners = _factory.GetListenerList();
             GeneralConcole();
         }
 
@@ -25,7 +26,6 @@ namespace SocketApp
                 e.Handler.GetSocket().LocalEndPoint.ToString(),
                 e.Handler.GetSocket().RemoteEndPoint.ToString()));
             Console.Write("> ");
-            e.Handler.SocketShutdownBeginEvent += OnSocketShutdownBegin;
         }
 
         void OnSocketConnect(object sender, SocketConnectEventArgs e)
@@ -41,15 +41,6 @@ namespace SocketApp
                 e.Handler.GetSocket().LocalEndPoint.ToString(),
                 e.Handler.GetSocket().RemoteEndPoint.ToString()));
             Console.Write("> ");
-            e.Handler.SocketShutdownBeginEvent += OnSocketShutdownBegin;
-        }
-
-        void OnSocketShutdownBegin(SockMgr source, SocketShutdownBeginEventArgs e)
-        {
-            if (source.Role == SocketRole.Listener)
-                _listeners.Remove(source);
-            else
-                _clients.Remove(source);
         }
 
         void GeneralConcole()
@@ -174,7 +165,6 @@ namespace SocketApp
                 case "1":
                     _factory.SetConfig(localIpAddr, localPort);
                     SockMgr listenerMgr = _factory.GetTcpListener();
-                    listenerMgr.SocketShutdownBeginEvent += OnSocketShutdownBegin;
                     _factory.ServerAccept(listenerMgr);
                     _listeners.Add(listenerMgr);
                     break;
@@ -246,7 +236,6 @@ namespace SocketApp
                     SockMgr client;
                     client = _factory.GetTcpClient();
                     // remaining
-                    client.SocketShutdownBeginEvent += OnSocketShutdownBegin;
                     _clients.Add(client);
                 }
                 catch (SocketException ex)

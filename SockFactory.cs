@@ -20,13 +20,26 @@ namespace SocketApp
         IPAddress _ipAddress;
         int _listenerPort = 11000;
         int _localPort = -1;  // not for listener
-        List<SockMgr> _clients;
-        List<SockMgr> _listeners;
+        List<SockMgr> _clients = new List<SockMgr>();
+        List<SockMgr> _listeners = new List<SockMgr>();
 
+        public void ResetLists()
+        {
+            _clients = new List<SockMgr>();
+            _listeners = new List<SockMgr>();
+        }
         public void SetLists(List<SockMgr> clients, List<SockMgr> listeners)
         {
             _clients = clients;
             _listeners = listeners;
+        }
+        public List<SockMgr> GetClientList()
+        {
+            return _clients;
+        }
+        public List<SockMgr> GetListenerList()
+        {
+            return _listeners;
         }
         public void SetConfig(string ipAddress, int remotePort, int localPort = -1)
         {
@@ -47,14 +60,17 @@ namespace SocketApp
             // makes restarting a socket become possible
             // https://blog.csdn.net/limlimlim/article/details/23424855
             listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            
+            SockMgr sockMgr = new SockMgr(listener, SocketRole.Listener, true);
+            BindingSockMgr(sockMgr);
 
             listener.Bind(localEndPoint);
             listener.Listen(4);
 
-            SockMgr sockMgr = new SockMgr(listener, SocketRole.Listener, true);
             return sockMgr;
         }
 
+        // start accepting
         public void ServerAccept(SockMgr listener)
         {
             listener.SocketAcceptEvent += OnSocketAccept;
@@ -135,15 +151,20 @@ namespace SocketApp
             return sockMgr;
         }
 
+        // init sockMgr
         private void BindingSockMgr(SockMgr sockMgr)
         {
-            sockMgr.SetSerializationMethod(Serialize);
+            if (sockMgr.Role == SocketRole.Client)
+                sockMgr.SetSerializationMethod(Serialize);
             Responser responser = new Responser(_clients, _listeners);
             if (sockMgr.Role == SocketRole.Client)
                 responser.OnSocketConnected(sockMgr);
             sockMgr.SocketShutdownBeginEvent += responser.OnSocketShutdownBegin;
-            sockMgr.SocketReceiveEvent += responser.OnSocketReceive;
-            sockMgr.StartReceive();
+            if (sockMgr.Role == SocketRole.Client)
+            {
+                sockMgr.SocketReceiveEvent += responser.OnSocketReceive;
+                sockMgr.StartReceive();
+            }
         }
 
         static byte[] Serialize(object s)

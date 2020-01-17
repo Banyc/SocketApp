@@ -54,10 +54,19 @@ namespace SocketApp
 
         public void OnSocketShutdownBegin(SockMgr source, SocketShutdownBeginEventArgs e)
         {
+            if (source.Role == SocketRole.Listener)
+                _listeners.Remove(source);
+            else
+                _clients.Remove(source);
+
             // print: [Shutdown] local -> remote
-            Console.WriteLine(string.Format("[Shutdown] {0} -> {1}",
-                source.GetSocket().LocalEndPoint.ToString(),
-                source.GetSocket().RemoteEndPoint.ToString()));
+            if (source.Role == SocketRole.Client)
+                Console.WriteLine(string.Format("[Shutdown] {0} -> {1}",
+                    source.GetSocket().LocalEndPoint.ToString(),
+                    source.GetSocket().RemoteEndPoint.ToString()));
+            if (source.Role == SocketRole.Listener)
+                Console.WriteLine(string.Format("[Shutdown] {0} <- *",
+                    source.GetSocket().LocalEndPoint.ToString()));
             Console.Write("> ");
         }
     }
