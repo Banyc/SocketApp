@@ -8,6 +8,8 @@ namespace SocketApp
     // build SockMgr and connect it to Responser
     public class SockFactory
     {
+        public event SockMgr.SocketAcceptEventHandler SocketAcceptEvent;
+        public event SockMgr.SocketConnectEventHandler SocketConnectEvent;
         IPAddress _ipAddress;
         int _listenerPort = 11000;
         int _localPort = -1;  // not for listener
@@ -39,6 +41,11 @@ namespace SocketApp
             _localPort = localPort;
         }
 
+        public void SetProtocol()
+        {
+            // TODO
+        }
+
         public SockMgr GetTcpListener()
         {
             IPAddress ipAddress = IPAddress.Parse("0.0.0.0");
@@ -68,11 +75,12 @@ namespace SocketApp
             listener.SocketAcceptEvent += OnSocketAccept;
             listener.StartAccept();
         }
-
+        // return
         private void OnSocketAccept(SockMgr sender, SocketAcceptEventArgs e)
         {
             Responser responser = InitSockMgr(e.Handler);
             responser.OnSocketAccept(sender, e);
+            SocketAcceptEvent?.Invoke(sender, e);
         }
 
         public void BuildTcpClient(int timesToTry)
@@ -86,6 +94,11 @@ namespace SocketApp
             SockMgr sockMgr = new SockMgr(sock, SocketRole.Client, false);
             InitSockMgr(sockMgr);
             sockMgr.StartConnect(new IPEndPoint(_ipAddress, _listenerPort), timesToTry);
+        }
+        // return
+        private void OnSocketConnect(object sender, SocketConnectEventArgs e)
+        {
+            SocketConnectEvent?.Invoke(sender, e);
         }
 
         // <https://gist.github.com/louis-e/888d5031190408775ad130dde353e0fd>
