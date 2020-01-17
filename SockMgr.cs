@@ -122,6 +122,8 @@ namespace SocketApp
                 Socket handler = listener.EndAccept(ar);
 
                 SockMgr sockMgr = new SockMgr(handler, SocketRole.Client, true);
+                sockMgr.IsConnected = true;
+                sockMgr.StartReceive();
 
                 SocketAcceptEvent?.Invoke(this, new SocketAcceptEventArgs(sockMgr));
 
@@ -150,6 +152,7 @@ namespace SocketApp
             {
                 state.workSocket.EndConnect(ar);
                 this.IsConnected = true;
+                StartReceive();
             }
             catch (SocketException ex)
             {

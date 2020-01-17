@@ -39,17 +39,30 @@ namespace SocketApp
             Console.Write("> ");
         }
 
-        public void OnSocketConnected(SockMgr source)  // provided by SockFactory
+        public void OnSocketConnected(object sender, SocketConnectEventArgs e)
         {
             // print: [Connect] local -> remote
             Console.WriteLine(string.Format("[Connect] {0} -> {1}",
-                source.GetSocket().LocalEndPoint.ToString(),
-                source.GetSocket().RemoteEndPoint.ToString()));
+                e.Handler.GetSocket().LocalEndPoint.ToString(),
+                e.Handler.GetSocket().RemoteEndPoint.ToString()));
             Console.Write("> ");
             // send connection info to peer
-            source.Send(string.Format("{0} -> {1}",
-                source.GetSocket().LocalEndPoint.ToString(),
-                source.GetSocket().RemoteEndPoint.ToString()));
+            e.Handler.Send(string.Format("{0} -> {1}",
+                e.Handler.GetSocket().LocalEndPoint.ToString(),
+                e.Handler.GetSocket().RemoteEndPoint.ToString()));
+        }
+
+        public void OnSocketAccept(SockMgr sender, SocketAcceptEventArgs e)  // from SockFactory
+        {
+            // print: [Accept] local -> remote
+            Console.WriteLine(string.Format("[Accept] {0} -> {1}",
+                e.Handler.GetSocket().LocalEndPoint.ToString(),
+                e.Handler.GetSocket().RemoteEndPoint.ToString()));
+            Console.Write("> ");
+            // send connection info to peer
+            e.Handler.Send(string.Format("{0} -> {1}",
+                e.Handler.GetSocket().LocalEndPoint.ToString(),
+                e.Handler.GetSocket().RemoteEndPoint.ToString()));
         }
 
         public void OnSocketShutdownBegin(SockMgr source, SocketShutdownBeginEventArgs e)

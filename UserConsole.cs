@@ -22,10 +22,6 @@ namespace SocketApp
         void OnAcceptEvent(object sender, AcceptEventArgs e)
         {
             _clients.Add(e.Handler);
-            Console.WriteLine(string.Format("[Accept] {0} -> {1}",
-                e.Handler.GetSocket().LocalEndPoint.ToString(),
-                e.Handler.GetSocket().RemoteEndPoint.ToString()));
-            Console.Write("> ");
         }
 
         void OnSocketConnect(object sender, SocketConnectEventArgs e)
@@ -37,10 +33,6 @@ namespace SocketApp
                 return;
             }
             _clients.Add(e.Handler);
-            Console.WriteLine(string.Format("[Connect] {0} -> {1}",
-                e.Handler.GetSocket().LocalEndPoint.ToString(),
-                e.Handler.GetSocket().RemoteEndPoint.ToString()));
-            Console.Write("> ");
         }
 
         void GeneralConcole()
@@ -230,27 +222,7 @@ namespace SocketApp
             }
 
             // begin to build
-            if (timesToTry == 1)
-                try
-                {
-                    SockMgr client;
-                    client = _factory.GetTcpClient();
-                    // remaining
-                    _clients.Add(client);
-                }
-                catch (SocketException ex)
-                {
-                    switch ((SocketError)ex.ErrorCode)
-                    {
-                        case SocketError.ConnectionRefused:
-                            Console.WriteLine("[Error] Connection Refused. Can not connect because the target machine has actively declined the connection.");
-                            break;
-                        default:
-                            Console.WriteLine("[Error] SocketException");
-                            break;
-                    }
-                }
-            else if (timesToTry > 1)
+            if (timesToTry > 0)
                 _factory.BuildTcpClient(timesToTry);
             else
                 return;

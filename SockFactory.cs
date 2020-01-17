@@ -62,7 +62,7 @@ namespace SocketApp
             listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
             
             SockMgr sockMgr = new SockMgr(listener, SocketRole.Listener, true);
-            BindingSockMgr(sockMgr);
+            InitSockMgr(sockMgr);
 
             listener.Bind(localEndPoint);
             listener.Listen(4);
@@ -73,13 +73,15 @@ namespace SocketApp
         // start accepting
         public void ServerAccept(SockMgr listener)
         {
+            InitSockMgr(listener);
             listener.SocketAcceptEvent += OnSocketAccept;
             listener.StartAccept();
         }
 
         private void OnSocketAccept(SockMgr sender, SocketAcceptEventArgs e)
         {
-            BindingSockMgr(e.Handler);
+            Responser responser = InitSockMgr(e.Handler);
+            responser.OnSocketAccept(sender, e);
             AcceptEvent?.Invoke(this, new AcceptEventArgs(e.Handler));
         }
 
@@ -92,35 +94,14 @@ namespace SocketApp
                 sock.Bind(new IPEndPoint(IPAddress.Any, _localPort));
 
             SockMgr sockMgr = new SockMgr(sock, SocketRole.Client, false);
+            InitSockMgr(sockMgr);
             sockMgr.SocketConnectEvent += OnSocketConnect;
             sockMgr.StartConnect(new IPEndPoint(_ipAddress, _listenerPort), timesToTry);
         }
 
         private void OnSocketConnect(object sender, SocketConnectEventArgs e)
         {
-            if (!e.Handler.IsConnected)
-            {
-                SocketConnectEvent?.Invoke(this, e);
-                return;
-            }
-            BindingSockMgr(e.Handler);
             SocketConnectEvent?.Invoke(this, e);
-        }
-
-        public SockMgr GetTcpClient()
-        {
-            Socket sock = new Socket(_ipAddress.AddressFamily,
-                SocketType.Stream, ProtocolType.Tcp);
-
-            if (_localPort >= 0)
-                sock.Bind(new IPEndPoint(IPAddress.Any, _localPort));
-
-            sock.Connect(new IPEndPoint(_ipAddress, _listenerPort));
-
-            SockMgr sockMgr = new SockMgr(sock, SocketRole.Client, false);
-            BindingSockMgr(sockMgr);
-
-            return sockMgr;
         }
 
         // <https://gist.github.com/louis-e/888d5031190408775ad130dde353e0fd>
@@ -133,7 +114,7 @@ namespace SocketApp
             listener.Bind(new IPEndPoint(_ipAddress, _listenerPort));
 
             SockMgr sockMgr = new SockMgr(listener, SocketRole.Listener, true);
-            BindingSockMgr(sockMgr);
+            InitSockMgr(sockMgr);
 
             return sockMgr;
         }
@@ -143,28 +124,29 @@ namespace SocketApp
             Socket sock = new Socket(_ipAddress.AddressFamily,
                 SocketType.Dgram, ProtocolType.Udp);
 
-            sock.Connect(new IPEndPoint(_ipAddress, _listenerPort));
-
             SockMgr sockMgr = new SockMgr(sock, SocketRole.Client, false);
-            BindingSockMgr(sockMgr);
+            InitSockMgr(sockMgr);
+
+            // TODO: use BeginConnect instead
+            sock.Connect(new IPEndPoint(_ipAddress, _listenerPort));
 
             return sockMgr;
         }
 
         // init sockMgr
-        private void BindingSockMgr(SockMgr sockMgr)
+        private Responser InitSockMgr(SockMgr sockMgr)
         {
             if (sockMgr.Role == SocketRole.Client)
                 sockMgr.SetSerializationMethod(Serialize);
             Responser responser = new Responser(_clients, _listeners);
             if (sockMgr.Role == SocketRole.Client)
-                responser.OnSocketConnected(sockMgr);
+                sockMgr.SocketConnectEvent += responser.OnSocketConnected;
             sockMgr.SocketShutdownBeginEvent += responser.OnSocketShutdownBegin;
             if (sockMgr.Role == SocketRole.Client)
             {
                 sockMgr.SocketReceiveEvent += responser.OnSocketReceive;
-                sockMgr.StartReceive();
             }
+            return responser;
         }
 
         static byte[] Serialize(object s)
