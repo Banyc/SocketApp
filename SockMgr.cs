@@ -44,6 +44,7 @@ namespace SocketApp
         SockList _sockList;
         Protocol.ProtocolList _protocolList;
         SockBase _sockBase;
+        bool _isShutdown = false;
 
         public SockMgr(SockBase sockBase, SockList sockList, Protocol.ProtocolList protocolList)
         {
@@ -100,6 +101,12 @@ namespace SocketApp
         public void Send(object data)
         {
             _sockBase.Send((byte[]) _protocolList.Text.GetDown(data));
+        }
+
+        public void Shutdown()
+        {
+            _isShutdown = true;
+            _sockBase.Shutdown();
         }
     }
 }

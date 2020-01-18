@@ -76,11 +76,11 @@ namespace SocketApp
         {
             while (_sockList.Clients.Count > 0)
             {
-                _sockList.Clients[0].GetSockBase().Shutdown();
+                _sockList.Clients[0].Shutdown();
             }
             while (_sockList.Listeners.Count > 0)
             {
-                _sockList.Listeners[0].GetSockBase().Shutdown();
+                _sockList.Listeners[0].Shutdown();
             }
         }
 
@@ -224,7 +224,7 @@ namespace SocketApp
                     SendConsole(sockMgr);
                     break;
                 case "2":
-                    sockMgr.GetSockBase().Shutdown();
+                    sockMgr.Shutdown();
                     break;
                 case "3":
                     Console.WriteLine(sockMgr.GetSockBase().IsHost.ToString());
@@ -244,7 +244,7 @@ namespace SocketApp
             switch (sel)
             {
                 case "1":
-                    sockMgr.GetSockBase().Shutdown();
+                    sockMgr.Shutdown();
                     break;
                 default:
                     break;

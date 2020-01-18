@@ -67,7 +67,7 @@ namespace SocketApp
                 e.Handler.GetSockBase().GetSocket().RemoteEndPoint.ToString()));
         }
 
-        public void OnSockMgrAccept(Object sender, SockMgrAcceptEventArgs e)  // from SockFactory
+        public void OnSockMgrAccept(Object sender, SockMgrAcceptEventArgs e)
         {
             _sockList.Clients.Add(e.Handler);
             // print: [Accept] local -> remote
@@ -87,16 +87,19 @@ namespace SocketApp
                 _sockList.Listeners.Remove(e.Handler);
             else
                 _sockList.Clients.Remove(e.Handler);
-
-            // print: [Shutdown] local -> remote
-            if (e.Handler.GetSockBase().Role == SocketRole.Client)
-                Console.WriteLine(string.Format("[Shutdown] {0} -> {1}",
-                    e.Handler.GetSockBase().GetSocket().LocalEndPoint.ToString(),
-                    e.Handler.GetSockBase().GetSocket().RemoteEndPoint.ToString()));
-            if (e.Handler.GetSockBase().Role == SocketRole.Listener)
-                Console.WriteLine(string.Format("[Shutdown] {0} <- *",
-                    e.Handler.GetSockBase().GetSocket().LocalEndPoint.ToString()));
-            Console.Write("> ");
+            try
+            {
+                // print: [Shutdown] local -> remote
+                if (e.Handler.GetSockBase().Role == SocketRole.Client)
+                    Console.WriteLine(string.Format("[Shutdown] {0} -> {1}",
+                        e.Handler.GetSockBase().GetSocket().LocalEndPoint.ToString(),
+                        e.Handler.GetSockBase().GetSocket().RemoteEndPoint.ToString()));
+                if (e.Handler.GetSockBase().Role == SocketRole.Listener)
+                    Console.WriteLine(string.Format("[Shutdown] {0} <- *",
+                        e.Handler.GetSockBase().GetSocket().LocalEndPoint.ToString()));
+                Console.Write("> ");
+            }
+            catch (ObjectDisposedException) { }
         }
     }
 }
