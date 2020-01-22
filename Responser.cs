@@ -1,6 +1,8 @@
+using System.Net.Mime;
 using System.Text;
 using System;
 using System.Collections.Generic;
+using SocketApp.Protocol;
 
 namespace SocketApp
 {
@@ -9,17 +11,39 @@ namespace SocketApp
     {
         SockList _sockList;
 
-        Func<byte[], object> _DeserializeMethod;
-        
-        public Responser(SockList sockList, Func<byte[], object> DeserializeMethod)
+        Protocol.ProtocolList _protocolList;
+        SockMgr _sockMgr;
+
+        public Responser(SockList sockList, Protocol.ProtocolList protocolList, SockMgr sockMgr)
         {
             _sockList = sockList;
-            _DeserializeMethod = DeserializeMethod;
+            SetProtocolList(protocolList);
+            _sockMgr = sockMgr;
         }
 
-        public void SetDeserializeMethod(Func<byte[], object> DeserializeMethod)
+        public void SetProtocolList(Protocol.ProtocolList protocolList)
         {
-            _DeserializeMethod = DeserializeMethod;
+            _protocolList = protocolList;
+            // TODO: finish DEMO for File protocol
+            // _protocolList.File.NextHighLayerEvent += OnNextHighLayerEvent;
+            // _protocolList.File.NextLowLayerEvent += OnNextLowLayerEvent;
+            _protocolList.Text.NextHighLayerEvent += OnNextHighLayerEvent;
+            _protocolList.Text.NextLowLayerEvent += OnNextLowLayerEvent;
+        }
+
+        private void OnNextLowLayerEvent(Protocol.DataContent dataContent)
+        {
+            _sockMgr.GetSockBase().Send((byte[])dataContent.Data);
+        }
+        private void OnNextHighLayerEvent(Protocol.DataContent dataContent)
+        {
+            switch (dataContent.Type)
+            {
+                case Protocol.DataProtocolType.Text:
+                    Console.WriteLine((string)dataContent.Data);
+                    Console.WriteLine(string.Format("[MessageEnd]"));
+                    break;
+            }
         }
 
         public void OnSockMgrReceive(Object sender, SockMgrReceiveEventArgs e)
@@ -27,6 +51,8 @@ namespace SocketApp
             byte[] data;
 
             data = e.BufferMgr.GetAdequateBytes();
+            DataContent dataContent = new DataContent();
+            dataContent.Data = data;
             while (data.Length > 0)
             {
                 // print:
@@ -38,10 +64,14 @@ namespace SocketApp
                     e.Handler.GetSockBase().GetSocket().RemoteEndPoint.ToString(),
                     e.Handler.GetSockBase().GetSocket().LocalEndPoint.ToString(),
                     DateTime.Now.ToString()));
-                Console.WriteLine((string)_DeserializeMethod(data));
-                Console.WriteLine(string.Format("[MessageEnd]"));
+                dataContent.Type = DataProtocolType.Text;
+                _protocolList.Text.FromLowLayerToHere(dataContent);
+                // Console.WriteLine((string)_DeserializeMethod(data));
+                // Console.WriteLine(string.Format("[MessageEnd]"));
 
                 data = e.BufferMgr.GetAdequateBytes();
+                dataContent = new DataContent();
+                dataContent.Data = data;
             }
             Console.Write("> ");
         }
@@ -62,7 +92,7 @@ namespace SocketApp
                 e.Handler.GetSockBase().GetSocket().RemoteEndPoint.ToString()));
             Console.Write("> ");
             // send connection info to peer
-            e.Handler.Send(string.Format("{0} -> {1}",
+            e.Handler.SendText(string.Format("{0} -> {1}",
                 e.Handler.GetSockBase().GetSocket().LocalEndPoint.ToString(),
                 e.Handler.GetSockBase().GetSocket().RemoteEndPoint.ToString()));
         }
@@ -76,7 +106,7 @@ namespace SocketApp
                 e.Handler.GetSockBase().GetSocket().RemoteEndPoint.ToString()));
             Console.Write("> ");
             // send connection info to peer
-            e.Handler.Send(string.Format("{0} -> {1}",
+            e.Handler.SendText(string.Format("{0} -> {1}",
                 e.Handler.GetSockBase().GetSocket().LocalEndPoint.ToString(),
                 e.Handler.GetSockBase().GetSocket().RemoteEndPoint.ToString()));
         }

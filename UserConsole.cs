@@ -256,7 +256,7 @@ namespace SocketApp
             Console.WriteLine("Enter message to send");
             Console.Write("> ");
             string msg = Console.ReadLine();
-            sockMgr.Send(msg);
+            sockMgr.SendText(msg);
         }
     }
 }

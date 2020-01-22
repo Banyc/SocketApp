@@ -9,19 +9,26 @@ namespace SocketApp.Protocol
 
     public class UTF8Protocol : IProtocol
     {
-        public object GetDown(object arg)
+        public event NextLowLayerEventHandler NextLowLayerEvent;
+        public event NextHighLayerEventHandler NextHighLayerEvent;
+
+        public void FromHighLayerToHere(DataContent arg)
         {
-            return Encoding.UTF8.GetBytes((string)arg);
+            byte[] data = Encoding.UTF8.GetBytes((string)arg.Data);
+            arg.Data = data;
+            NextLowLayerEvent?.Invoke(arg);
+        }
+
+        public void FromLowLayerToHere(DataContent arg)
+        {
+            string data = Encoding.UTF8.GetString((byte[])arg.Data);
+            arg.Data = data;
+            NextHighLayerEvent?.Invoke(arg);
         }
 
         public object GetState()
         {
             throw new System.NotImplementedException();
-        }
-
-        public object GoUp(object arg)
-        {
-            return Encoding.UTF8.GetString((byte[])arg);
         }
 
         public void SetState(object state)

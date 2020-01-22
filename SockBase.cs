@@ -56,6 +56,7 @@ namespace SocketApp
         public SocketError errorType;
     }
 
+    // socket base to provide basic asynchronous interface of system socket
     public class SockBase
     {
         public delegate void SocketAcceptEventHandler(object sender, SocketAcceptEventArgs e);

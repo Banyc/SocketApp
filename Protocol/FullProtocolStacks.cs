@@ -1,43 +1,127 @@
+using System;
 using System.Linq;
 using System.Collections.Generic;
 namespace SocketApp.Protocol
 {
     public class FullProtocolStacksState
     {
-        public List<IProtocol> middleProtocols = new List<IProtocol>();
+        public List<IProtocol> MiddleProtocols = new List<IProtocol>();  // from high to low layer
+        public DataProtocolType Type = DataProtocolType.Undefined;
+
+        public void LinkMiddleProtocols()
+        {
+            int i;
+            for (i = 0; i < MiddleProtocols.Count; ++i)
+            {
+                if (i + 1 < MiddleProtocols.Count)
+                {
+                    MiddleProtocols[i].NextLowLayerEvent += MiddleProtocols[i + 1].FromHighLayerToHere;
+                }
+                if (i > 0)
+                {
+                    MiddleProtocols[i].NextHighLayerEvent += MiddleProtocols[i - 1].FromLowLayerToHere;
+                }
+            }
+        }
+
+        public void UnlinkMiddleProtocols()
+        {
+            int i;
+            for (i = 0; i < MiddleProtocols.Count; ++i)
+            {
+                if (i + 1 < MiddleProtocols.Count)
+                {
+                    MiddleProtocols[i].NextLowLayerEvent -= MiddleProtocols[i + 1].FromHighLayerToHere;
+                }
+                if (i > 0)
+                {
+                    MiddleProtocols[i].NextHighLayerEvent -= MiddleProtocols[i - 1].FromLowLayerToHere;
+                }
+            }
+        }
     }
 
     public class FullProtocolStacks : IProtocol
     {
         private FullProtocolStacksState _state = new FullProtocolStacksState();
-        public object GetDown(object arg)
+
+        public event NextLowLayerEventHandler NextLowLayerEvent;
+        public event NextHighLayerEventHandler NextHighLayerEvent;
+        private void LinkMiddleProtocols()
         {
-            object tmp = arg;
-            foreach (var proto in _state.middleProtocols)
+            _state.LinkMiddleProtocols();
+            int i;
+            for (i = 0; i < _state.MiddleProtocols.Count; ++i)
             {
-                tmp = proto.GetDown(tmp);
+                if (i + 1 < _state.MiddleProtocols.Count)
+                {
+                }
+                else  // already the last element
+                {
+                    _state.MiddleProtocols[i].NextLowLayerEvent += OnNextLowLayerEvent;
+                }
+                if (i > 0)
+                {
+                }
+                else  // the first element
+                {
+                    _state.MiddleProtocols[i].NextHighLayerEvent += OnNextHighLayerEvent;
+                }
             }
-            return (object)tmp;
+        }
+
+        private void UnlinkMiddleProtocols()
+        {
+            _state.UnlinkMiddleProtocols();
+            int i;
+            for (i = 0; i < _state.MiddleProtocols.Count; ++i)
+            {
+                if (i + 1 < _state.MiddleProtocols.Count)
+                {
+                }
+                else  // already the last element
+                {
+                    _state.MiddleProtocols[i].NextLowLayerEvent -= OnNextLowLayerEvent;
+                }
+                if (i > 0)
+                {
+                }
+                else  // the first element
+                {
+                    _state.MiddleProtocols[i].NextHighLayerEvent -= OnNextHighLayerEvent;
+                }
+            }
+        }
+
+        private void OnNextLowLayerEvent(DataContent data)
+        {
+            NextLowLayerEvent?.Invoke(data);
+        }
+        private void OnNextHighLayerEvent(DataContent data)
+        {
+            NextHighLayerEvent?.Invoke(data);
+        }
+
+        public void FromHighLayerToHere(DataContent data)
+        {
+            _state.MiddleProtocols.First().FromHighLayerToHere(data);
+        }
+
+        public void FromLowLayerToHere(DataContent data)
+        {
+            _state.MiddleProtocols.Last().FromLowLayerToHere(data);
         }
 
         public object GetState()
         {
+            UnlinkMiddleProtocols();
             return _state;
-        }
-
-        public object GoUp(object arg)
-        {
-            object tmp = arg;
-            foreach (var proto in _state.middleProtocols.AsEnumerable().Reverse())
-            {
-                tmp = proto.GoUp(tmp);
-            }
-            return (string)tmp;
         }
 
         public void SetState(object state)
         {
             _state = (FullProtocolStacksState)state;
+            LinkMiddleProtocols();
         }
     }
 }

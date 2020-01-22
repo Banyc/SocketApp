@@ -28,7 +28,7 @@ namespace SocketApp
         public BufferMgr BufferMgr;
     }
 
-    // socket manager to provide basic asynchronous interface of system socket
+    // a wrapper of `SockBase` and the corresponding `Responser`
     public class SockMgr
     {
         public delegate void SockMgrAcceptEventHandler(object sender, SockMgrAcceptEventArgs e);
@@ -43,26 +43,28 @@ namespace SocketApp
         Responser _responser;
         SockList _sockList;
         Protocol.ProtocolList _protocolList;
+        Protocol.ProtocolFactory _protocolFactory;
         SockBase _sockBase;
         bool _isShutdown = false;
 
-        public SockMgr(SockBase sockBase, SockList sockList, Protocol.ProtocolList protocolList)
+        public SockMgr(SockBase sockBase, SockList sockList, Protocol.ProtocolFactory protocolFactory)
         {
             _sockBase = sockBase;
             _sockBase.SocketAcceptEvent += OnSocketAccept;
             _sockBase.SocketConnectEvent += OnSocketConnect;
             _sockBase.SocketReceiveEvent += OnSocketReceive;
             _sockBase.SocketShutdownBeginEvent += OnSocketShutdownBegin;
-            _protocolList = protocolList;
+            _protocolFactory = protocolFactory;
+            _protocolList = _protocolFactory.GetProtocolList();
             _sockList = sockList;
 
-            Responser responser = new Responser(sockList, _protocolList.Text.GoUp);
+            Responser responser = new Responser(sockList, _protocolList, this);
             _responser = responser;
         }
 
         private void OnSocketAccept(object sender, SocketAcceptEventArgs e)
         {
-            SockMgr client = new SockMgr(e.Handler, _sockList, _protocolList);
+            SockMgr client = new SockMgr(e.Handler, _sockList, _protocolFactory);
             SockMgrAcceptEventArgs arg = new SockMgrAcceptEventArgs(client);
             _responser.OnSockMgrAccept(this, arg);
             SockMgrAcceptEvent?.Invoke(this, arg);
@@ -92,15 +94,19 @@ namespace SocketApp
         public void SetProtocolList(Protocol.ProtocolList protocolList)
         {
             _protocolList = protocolList;
-            _responser.SetDeserializeMethod(_protocolList.Text.GoUp);
+            _responser.SetProtocolList(_protocolList);
         }
         public SockBase GetSockBase()
         {
             return _sockBase;
         }
-        public void Send(object data)
+
+        public void SendText(string data)  // TODO: test
         {
-            _sockBase.Send((byte[]) _protocolList.Text.GetDown(data));
+            Protocol.DataContent dataContent = new Protocol.DataContent();
+            dataContent.Type = Protocol.DataProtocolType.Text;
+            dataContent.Data = data;
+            _protocolList.Text.FromHighLayerToHere(dataContent);
         }
 
         public void Shutdown()
