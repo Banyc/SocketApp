@@ -3,7 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 namespace SocketApp.Protocol
 {
-    public class FullProtocolStacksState
+    public class ProtocolStackState
     {
         public List<IProtocol> MiddleProtocols = new List<IProtocol>();  // from high to low layer
         public DataProtocolType Type = DataProtocolType.Undefined;
@@ -41,9 +41,10 @@ namespace SocketApp.Protocol
         }
     }
 
-    public class FullProtocolStacks : IProtocol
+    // a full protocol stack that contains protocols/middlewares
+    public class ProtocolStack : IProtocol
     {
-        private FullProtocolStacksState _state = new FullProtocolStacksState();
+        private ProtocolStackState _state = new ProtocolStackState();
 
         public event NextLowLayerEventHandler NextLowLayerEvent;
         public event NextHighLayerEventHandler NextHighLayerEvent;
@@ -112,15 +113,17 @@ namespace SocketApp.Protocol
             _state.MiddleProtocols.Last().FromLowLayerToHere(data);
         }
 
+        // remove all Event chains
         public object GetState()
         {
             UnlinkMiddleProtocols();
             return _state;
         }
 
+        // setup Event chains
         public void SetState(object state)
         {
-            _state = (FullProtocolStacksState)state;
+            _state = (ProtocolStackState)state;
             LinkMiddleProtocols();
         }
     }

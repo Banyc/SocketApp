@@ -6,15 +6,17 @@ namespace SocketApp.Protocol
         {
         }
 
+        // TODO: Set Options
+
         public ProtocolList GetProtocolList()
         {
             ProtocolList protocolList = new ProtocolList();
-            FullProtocolStacksState state = new FullProtocolStacksState();
+            ProtocolStackState state = new ProtocolStackState();
             state.MiddleProtocols.Add(new UTF8Protocol());
             state.Type = DataProtocolType.Text;
-            FullProtocolStacks fullProtocolStacks = new FullProtocolStacks();
-            fullProtocolStacks.SetState(state);
-            protocolList.Text = fullProtocolStacks;
+            ProtocolStack ProtocolStack = new ProtocolStack();
+            ProtocolStack.SetState(state);
+            protocolList.Text = ProtocolStack;
             return protocolList;
         }
     }

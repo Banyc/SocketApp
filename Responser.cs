@@ -66,8 +66,6 @@ namespace SocketApp
                     DateTime.Now.ToString()));
                 dataContent.Type = DataProtocolType.Text;
                 _protocolList.Text.FromLowLayerToHere(dataContent);
-                // Console.WriteLine((string)_DeserializeMethod(data));
-                // Console.WriteLine(string.Format("[MessageEnd]"));
 
                 data = e.BufferMgr.GetAdequateBytes();
                 dataContent = new DataContent();
