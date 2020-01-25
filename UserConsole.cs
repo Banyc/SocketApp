@@ -1,3 +1,4 @@
+using System.IO;
 using System.Net.Sockets;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,7 @@ namespace SocketApp
     {
         SockList _sockList;
         SockFactory _factory = new SockFactory();
+        Protocol.ProtocolFactoryOptions _protocolOptions = new Protocol.ProtocolFactoryOptions();
         public void ConsoleEntry(string[] args)
         {
             _sockList = _factory.GetSockList();
@@ -30,6 +32,8 @@ namespace SocketApp
                 Console.WriteLine("6. Build new Listener");
                 Console.WriteLine("7. Listener mode");  // manage listeners
                 Console.WriteLine("8. Exit");
+                Console.WriteLine("9. Create Keys");
+                Console.WriteLine("10. Set Keys");
                 Console.Write("> ");
                 string sel = Console.ReadLine();
                 switch (sel)
@@ -64,6 +68,12 @@ namespace SocketApp
                     case "8":
                         ShutdownAll();
                         isExit = true;
+                        break;
+                    case "9":
+                        KeyGenConsole();
+                        break;
+                    case "10":
+                        SetKeyConsole();
                         break;
                     default:
                         break;
@@ -133,6 +143,7 @@ namespace SocketApp
             else
                 localPort = int.Parse(localPortStr);
             // begin to build
+            _factory.SetProtocolOptions(_protocolOptions);
             switch (sel)
             {
                 case "1":
@@ -203,6 +214,7 @@ namespace SocketApp
             }
 
             // begin to build
+            _factory.SetProtocolOptions(_protocolOptions);
             if (timesToTry > 0)
                 _factory.BuildTcpClient(timesToTry);
             else
@@ -257,6 +269,39 @@ namespace SocketApp
             Console.Write("> ");
             string msg = Console.ReadLine();
             sockMgr.SendText(msg);
+        }
+
+        static void KeyGenConsole()
+        {
+            Console.WriteLine("Which?");
+            Console.WriteLine("1. RSA");
+            Console.WriteLine("2. AES");
+            Console.Write("> ");
+            string input = Console.ReadLine();
+            switch (input)
+            {
+                case "1":
+                    // TODO
+                    break;
+                case "2":
+                    System.Security.Cryptography.Aes aesAlg = System.Security.Cryptography.Aes.Create();
+                    aesAlg.GenerateKey();
+                    byte[] key = aesAlg.Key;
+                    File.WriteAllBytes("./AES.key", key);
+                    break;
+            }
+        }
+
+        private void SetKeyConsole()
+        {
+            string input;
+            Console.WriteLine("Path to key of AES? (leave blank for \"./Aes.key\")");
+            Console.Write("> ");
+            input = Console.ReadLine();
+            if (input == "")
+                input = "./Aes.key";
+            _protocolOptions.AesKey = File.ReadAllBytes(input);
+            _protocolOptions.EnableAes = true;
         }
     }
 }

@@ -64,6 +64,8 @@ namespace SocketApp
 
         private void OnSocketAccept(object sender, SocketAcceptEventArgs e)
         {
+            // Notice: all clients derived from the same listener share the same factory,
+            //  which means the modification on the shared factory will affect factory in other clients
             SockMgr client = new SockMgr(e.Handler, _sockList, _protocolFactory);
             SockMgrAcceptEventArgs arg = new SockMgrAcceptEventArgs(client);
             _responser.OnSockMgrAccept(this, arg);

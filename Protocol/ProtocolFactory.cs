@@ -1,12 +1,32 @@
 namespace SocketApp.Protocol
 {
+    public class ProtocolFactoryOptions
+    {
+        public bool EnableAes = false;
+        public bool EnableRsa = false;
+        public byte[] AesKey;
+        public byte[] RsaPriKey;
+        public byte[] RsaPubKey;
+    }
+
     public class ProtocolFactory
     {
-        public ProtocolFactory()
+        private ProtocolFactoryOptions _options = new ProtocolFactoryOptions();
+        public ProtocolFactory(ProtocolFactoryOptions options)
         {
+            _options = options;
+        }
+        public ProtocolFactory() { }
+
+        public void SetOptions(ProtocolFactoryOptions options)
+        {
+            _options = options;
         }
 
-        // TODO: Set Options
+        public ProtocolFactoryOptions GetOptions()
+        {
+            return _options;
+        }
 
         public ProtocolList GetProtocolList()
         {
@@ -16,12 +36,14 @@ namespace SocketApp.Protocol
             // UTF8
             state.MiddleProtocols.Add(new UTF8Protocol());
             // AES
-            AESProtocol aesP = new AESProtocol();
-            AESProtocolState aesState = new AESProtocolState();
-            // WORKAROUND
-            aesState.Key = new byte[16] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-            aesP.SetState(aesState);
-            state.MiddleProtocols.Add(aesP);
+            if (_options.EnableAes)
+            {
+                AESProtocol aesP = new AESProtocol();
+                AESProtocolState aesState = new AESProtocolState();
+                aesState.Key = _options.AesKey;
+                aesP.SetState(aesState);
+                state.MiddleProtocols.Add(aesP);
+            }
 
             state.Type = DataProtocolType.Text;
             ProtocolStack ProtocolStack = new ProtocolStack();

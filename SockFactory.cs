@@ -15,7 +15,8 @@ namespace SocketApp
         int _listenerPort = 11000;
         int _localPort = -1;  // not for listener
         SockList _sockList = new SockList();
-        
+        ProtocolFactoryOptions _protocolOptions = new ProtocolFactoryOptions();
+
         public SockFactory()
         {
             
@@ -40,6 +41,11 @@ namespace SocketApp
             _localPort = localPort;
         }
 
+        public void SetProtocolOptions(Protocol.ProtocolFactoryOptions options)
+        {
+            _protocolOptions = options;
+        }
+
         public SockMgr GetTcpListener()
         {
             IPAddress ipAddress = IPAddress.Parse("0.0.0.0");
@@ -54,7 +60,7 @@ namespace SocketApp
             listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
 
             SockBase sockBase = new SockBase(listener, SocketRole.Listener, true);
-            ProtocolFactory protocolFactory = new ProtocolFactory();
+            ProtocolFactory protocolFactory = new ProtocolFactory(_protocolOptions);
             // set config to `protocolFactory`
             SockMgr sockMgr = new SockMgr(sockBase, _sockList, protocolFactory);
 
@@ -85,7 +91,7 @@ namespace SocketApp
                 sock.Bind(new IPEndPoint(IPAddress.Any, _localPort));
 
             SockBase sockBase = new SockBase(sock, SocketRole.Client, false);
-            ProtocolFactory protocolFactory = new ProtocolFactory();
+            ProtocolFactory protocolFactory = new ProtocolFactory(_protocolOptions);
             // set config to `protocolFactory`
             SockMgr sockMgr = new SockMgr(sockBase, _sockList, protocolFactory);
 
@@ -107,7 +113,7 @@ namespace SocketApp
             listener.Bind(new IPEndPoint(_ipAddress, _listenerPort));
 
             SockBase sockBase = new SockBase(listener, SocketRole.Listener, true);
-            ProtocolFactory protocolFactory = new ProtocolFactory();
+            ProtocolFactory protocolFactory = new ProtocolFactory(_protocolOptions);
             // set config to `protocolFactory`
             SockMgr sockMgr = new SockMgr(sockBase, _sockList, protocolFactory);
 
@@ -120,7 +126,7 @@ namespace SocketApp
                 SocketType.Dgram, ProtocolType.Udp);
 
             SockBase sockBase = new SockBase(sock, SocketRole.Client, false);
-            ProtocolFactory protocolFactory = new ProtocolFactory();
+            ProtocolFactory protocolFactory = new ProtocolFactory(_protocolOptions);
             // set config to `protocolFactory`
             SockMgr sockMgr = new SockMgr(sockBase, _sockList, protocolFactory);
 
