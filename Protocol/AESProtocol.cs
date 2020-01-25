@@ -13,7 +13,6 @@ namespace SocketApp.Protocol
         public int FeedbackSize = 128;
         public PaddingMode Padding = PaddingMode.PKCS7;  // only tested this padding
         public byte[] Key;
-        // public byte[] IV;
     }
 
     public class AESProtocol : IProtocol
@@ -60,7 +59,6 @@ namespace SocketApp.Protocol
             _aesAlg.FeedbackSize = _state.FeedbackSize;
             _aesAlg.Padding = _state.Padding;
             _aesAlg.Key = _state.Key;
-            // _aesAlg.IV = _state.IV;
         }
 
         private byte[] Decrypt(byte[] crypto)

@@ -31,10 +31,12 @@ namespace SocketApp
             _protocolList.Text.NextLowLayerEvent += OnNextLowLayerEvent;
         }
 
+        // respond to event at the bottom of the protocol stack
         private void OnNextLowLayerEvent(Protocol.DataContent dataContent)
         {
             _sockMgr.GetSockBase().Send((byte[])dataContent.Data);
         }
+        // respond to event at the top of the protocol stack
         private void OnNextHighLayerEvent(Protocol.DataContent dataContent)
         {
             switch (dataContent.Type)
@@ -46,6 +48,7 @@ namespace SocketApp
             }
         }
 
+        // received new message
         public void OnSockMgrReceive(Object sender, SockMgrReceiveEventArgs e)
         {
             byte[] data;

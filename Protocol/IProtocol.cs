@@ -12,6 +12,7 @@ namespace SocketApp.Protocol
     {
         public object Data = null;  // the undefined type of data
         public DataProtocolType Type = DataProtocolType.Undefined;
+        public byte[] AesKey = null;  // to update the AesKey through protocol stack
     }
 
     public delegate void NextLowLayerEventHandler(DataContent dataContent);
