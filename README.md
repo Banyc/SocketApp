@@ -16,7 +16,18 @@ A simple interactive socket. Cross-platform.
 
 ## Customization
 
-You could customize the behavior in class `Responser`
+Reaction for some events is defined in class `Responser`. Those Events are
+
+- On data (byte[]) has passed down to the bottom of the protocol stack and is ready to send
+- On data has been delivered up to the top of the protocol stack and is ready for APP to consume
+- On Accept() has done
+- On Connect() has done
+- On Receiving new message (which has not been processed by the protocol stack yet)
+- On Socket is about to shutdown
+
+To Modify the protocol stack, goto `ProtocolFactory`.
+
+To build a new layer of protocol, derive your class from `IProtocol`.
 
 ## TODO
 
