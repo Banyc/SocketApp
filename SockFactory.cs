@@ -91,8 +91,8 @@ namespace SocketApp
                 sock.Bind(new IPEndPoint(IPAddress.Any, _localPort));
 
             SockBase sockBase = new SockBase(sock, SocketRole.Client, false);
-            ProtocolFactory protocolFactory = new ProtocolFactory(_protocolOptions);
             // set config to `protocolFactory`
+            ProtocolFactory protocolFactory = new ProtocolFactory(_protocolOptions);
             SockMgr sockMgr = new SockMgr(sockBase, _sockList, protocolFactory);
 
             sockMgr.GetSockBase().StartConnect(new IPEndPoint(_ipAddress, _listenerPort), timesToTry);
@@ -113,8 +113,8 @@ namespace SocketApp
             listener.Bind(new IPEndPoint(_ipAddress, _listenerPort));
 
             SockBase sockBase = new SockBase(listener, SocketRole.Listener, true);
-            ProtocolFactory protocolFactory = new ProtocolFactory(_protocolOptions);
             // set config to `protocolFactory`
+            ProtocolFactory protocolFactory = new ProtocolFactory(_protocolOptions);
             SockMgr sockMgr = new SockMgr(sockBase, _sockList, protocolFactory);
 
             return sockMgr;
@@ -126,8 +126,8 @@ namespace SocketApp
                 SocketType.Dgram, ProtocolType.Udp);
 
             SockBase sockBase = new SockBase(sock, SocketRole.Client, false);
-            ProtocolFactory protocolFactory = new ProtocolFactory(_protocolOptions);
             // set config to `protocolFactory`
+            ProtocolFactory protocolFactory = new ProtocolFactory(_protocolOptions);
             SockMgr sockMgr = new SockMgr(sockBase, _sockList, protocolFactory);
 
             // TODO: use BeginConnect instead
