@@ -34,4 +34,3 @@ To build a new layer of protocol, derive your class from `IProtocol`.
 - [ ] Support UDP
 - [ ] Handle Errors
 - [ ] SocketApp Hosts a Http Proxy Server
-- [ ] Support TCP hole punching

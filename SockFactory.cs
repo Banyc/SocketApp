@@ -46,7 +46,7 @@ namespace SocketApp
 
             SockBase sockBase = new SockBase(listener, SocketRole.Listener, true);
             // set config to `protocolFactory`
-            ProtocolFactory protocolFactory = new ProtocolFactory(_options.ProtocolOptions);
+            ProtocolFactory protocolFactory = new ProtocolFactory(_sockController, _options.ProtocolOptions);
             SockMgr sockMgr = new SockMgr(sockBase, _sockController, protocolFactory);
 
             listener.Bind(localEndPoint);
@@ -77,7 +77,7 @@ namespace SocketApp
 
             SockBase sockBase = new SockBase(sock, SocketRole.Client, false);
             // set config to `protocolFactory`
-            ProtocolFactory protocolFactory = new ProtocolFactory(_options.ProtocolOptions);
+            ProtocolFactory protocolFactory = new ProtocolFactory(_sockController, _options.ProtocolOptions);
             SockMgr sockMgr = new SockMgr(sockBase, _sockController, protocolFactory);
 
             sockMgr.GetSockBase().StartConnect(new IPEndPoint(_options.ListenerIpAddress, _options.ListenerPort), _options.TimesToTry);
@@ -99,7 +99,7 @@ namespace SocketApp
 
             SockBase sockBase = new SockBase(listener, SocketRole.Listener, true);
             // set config to `protocolFactory`
-            ProtocolFactory protocolFactory = new ProtocolFactory(_options.ProtocolOptions);
+            ProtocolFactory protocolFactory = new ProtocolFactory(_sockController, _options.ProtocolOptions);
             SockMgr sockMgr = new SockMgr(sockBase, _sockController, protocolFactory);
 
             return sockMgr;
@@ -112,7 +112,7 @@ namespace SocketApp
 
             SockBase sockBase = new SockBase(sock, SocketRole.Client, false);
             // set config to `protocolFactory`
-            ProtocolFactory protocolFactory = new ProtocolFactory(_options.ProtocolOptions);
+            ProtocolFactory protocolFactory = new ProtocolFactory(_sockController, _options.ProtocolOptions);
             SockMgr sockMgr = new SockMgr(sockBase, _sockController, protocolFactory);
 
             // TODO: use BeginConnect instead
