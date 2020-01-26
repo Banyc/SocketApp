@@ -9,14 +9,14 @@ namespace SocketApp
     // passively respond to socket events
     public class Responser
     {
-        SockList _sockList;
+        SockController _sockController;
 
         Protocol.ProtocolList _protocolList;
         SockMgr _sockMgr;
 
-        public Responser(SockList sockList, Protocol.ProtocolList protocolList, SockMgr sockMgr)
+        public Responser(SockController sockController, Protocol.ProtocolList protocolList, SockMgr sockMgr)
         {
-            _sockList = sockList;
+            _sockController = sockController;
             SetProtocolList(protocolList);
             _sockMgr = sockMgr;
         }
@@ -86,7 +86,7 @@ namespace SocketApp
                 Console.Write("> ");
                 return;
             }
-            _sockList.Clients.Add(e.Handler);
+            _sockController.AddSockMgr(e.Handler, SocketRole.Client);
             // print: [Connect] local -> remote
             Console.WriteLine(string.Format("[Connect] {0} -> {1}",
                 e.Handler.GetSockBase().GetSocket().LocalEndPoint.ToString(),
@@ -100,7 +100,7 @@ namespace SocketApp
 
         public void OnSockMgrAccept(Object sender, SockMgrAcceptEventArgs e)
         {
-            _sockList.Clients.Add(e.Handler);
+            _sockController.AddSockMgr(e.Handler, SocketRole.Client);
             // print: [Accept] local -> remote
             Console.WriteLine(string.Format("[Accept] {0} -> {1}",
                 e.Handler.GetSockBase().GetSocket().LocalEndPoint.ToString(),
@@ -114,10 +114,7 @@ namespace SocketApp
 
         public void OnSockMgrShutdownBegin(Object sender, SockMgrShutdownBeginEventArgs e)
         {
-            if (e.Handler.GetSockBase().Role == SocketRole.Listener)
-                _sockList.Listeners.Remove(e.Handler);
-            else
-                _sockList.Clients.Remove(e.Handler);
+            _sockController.RemoveSockMgr(e.Handler);
             try
             {
                 // print: [Shutdown] local -> remote

@@ -8,12 +8,13 @@ namespace SocketApp
     // Actively raise some operations to socket
     public class UserConsole
     {
-        SockList _sockList;
-        SockFactory _factory = new SockFactory();
+        SockController _sockController = new SockController();
+        SockFactory _factory;
         Protocol.ProtocolFactoryOptions _protocolOptions = new Protocol.ProtocolFactoryOptions();
+
         public void ConsoleEntry(string[] args)
         {
-            _sockList = _factory.GetSockList();
+            _factory = new SockFactory(_sockController);
             GeneralConcole();
         }
 
@@ -45,7 +46,7 @@ namespace SocketApp
                         Console.WriteLine("Enter the index of the client");
                         Console.Write("> ");
                         int index = int.Parse(Console.ReadLine());
-                        InterfaceMenu(_sockList.Clients[index]);
+                        InterfaceMenu(_sockController.GetSockList().Clients[index]);
                         break;
                     case "3":  // Establish new connection
                         BuildClientConsole();
@@ -63,7 +64,7 @@ namespace SocketApp
                         Console.WriteLine("Enter the index of the listener");
                         Console.Write("> ");
                         int listenerIndex = int.Parse(Console.ReadLine());
-                        ListenerMenu(_sockList.Listeners[listenerIndex]);
+                        ListenerMenu(_sockController.GetSockList().Listeners[listenerIndex]);
                         break;
                     case "8":
                         ShutdownAll();
@@ -84,20 +85,13 @@ namespace SocketApp
         // shutdown all listeners and clients
         void ShutdownAll()
         {
-            while (_sockList.Clients.Count > 0)
-            {
-                _sockList.Clients[0].Shutdown();
-            }
-            while (_sockList.Listeners.Count > 0)
-            {
-                _sockList.Listeners[0].Shutdown();
-            }
+            _sockController.ShutdownAll();
         }
 
         void ListAllClients()
         {
             int i = 0;
-            foreach (var sockMgr in _sockList.Clients)
+            foreach (var sockMgr in _sockController.GetSockList().Clients)
             {
                 Console.Write(string.Format("{0}\t", i));
                 Console.Write(string.Format("{0}\t", sockMgr.GetSockBase().IsHost.ToString()));  // if it is a host
@@ -111,7 +105,7 @@ namespace SocketApp
         void ListAllListeners()
         {
             int i = 0;
-            foreach (var sockMgr in _sockList.Listeners)
+            foreach (var sockMgr in _sockController.GetSockList().Listeners)
             {
                 Console.Write(string.Format("{0}\t", i));
                 Console.WriteLine(sockMgr.GetSockBase().GetSocket().LocalEndPoint.ToString());
@@ -150,7 +144,7 @@ namespace SocketApp
                     _factory.SetConfig(localIpAddr, localPort);
                     SockMgr listenerMgr = _factory.GetTcpListener();
                     _factory.ServerAccept(listenerMgr);
-                    _sockList.Listeners.Add(listenerMgr);
+                    _sockController.GetSockList().Listeners.Add(listenerMgr);
                     break;
                 case "2":
                     // TODO
