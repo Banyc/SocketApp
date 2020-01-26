@@ -45,9 +45,7 @@ namespace SocketApp
             listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
 
             SockBase sockBase = new SockBase(listener, SocketRole.Listener, true);
-            // set config to `protocolFactory`
-            ProtocolFactory protocolFactory = new ProtocolFactory(_sockController, _options.ProtocolOptions);
-            SockMgr sockMgr = new SockMgr(sockBase, _sockController, protocolFactory);
+            SockMgr sockMgr = new SockMgr(sockBase, _sockController, _options.ProtocolOptions);
 
             listener.Bind(localEndPoint);
             listener.Listen(4);
@@ -76,9 +74,7 @@ namespace SocketApp
                 sock.Bind(new IPEndPoint(IPAddress.Any, _options.ClientPort));
 
             SockBase sockBase = new SockBase(sock, SocketRole.Client, false);
-            // set config to `protocolFactory`
-            ProtocolFactory protocolFactory = new ProtocolFactory(_sockController, _options.ProtocolOptions);
-            SockMgr sockMgr = new SockMgr(sockBase, _sockController, protocolFactory);
+            SockMgr sockMgr = new SockMgr(sockBase, _sockController, _options.ProtocolOptions);
 
             sockMgr.GetSockBase().StartConnect(new IPEndPoint(_options.ListenerIpAddress, _options.ListenerPort), _options.TimesToTry);
         }
@@ -98,9 +94,7 @@ namespace SocketApp
             listener.Bind(new IPEndPoint(_options.ListenerIpAddress, _options.ListenerPort));
 
             SockBase sockBase = new SockBase(listener, SocketRole.Listener, true);
-            // set config to `protocolFactory`
-            ProtocolFactory protocolFactory = new ProtocolFactory(_sockController, _options.ProtocolOptions);
-            SockMgr sockMgr = new SockMgr(sockBase, _sockController, protocolFactory);
+            SockMgr sockMgr = new SockMgr(sockBase, _sockController, _options.ProtocolOptions);
 
             return sockMgr;
         }
@@ -111,9 +105,7 @@ namespace SocketApp
                 SocketType.Dgram, ProtocolType.Udp);
 
             SockBase sockBase = new SockBase(sock, SocketRole.Client, false);
-            // set config to `protocolFactory`
-            ProtocolFactory protocolFactory = new ProtocolFactory(_sockController, _options.ProtocolOptions);
-            SockMgr sockMgr = new SockMgr(sockBase, _sockController, protocolFactory);
+            SockMgr sockMgr = new SockMgr(sockBase, _sockController, _options.ProtocolOptions);
 
             // TODO: use BeginConnect instead
             sock.Connect(new IPEndPoint(_options.ListenerIpAddress, _options.ListenerPort));

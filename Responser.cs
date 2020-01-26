@@ -42,6 +42,7 @@ namespace SocketApp
                 case Protocol.DataProtocolType.Text:
                     Console.WriteLine((string)dataContent.Data);
                     Console.WriteLine(string.Format("[MessageEnd]"));
+                    Console.Write("> ");
                     break;
             }
         }
@@ -49,30 +50,7 @@ namespace SocketApp
         // received new message
         public void OnSockMgrReceive(Object sender, SockMgrReceiveEventArgs e)
         {
-            byte[] data;
-
-            data = e.BufferMgr.GetAdequateBytes();
-            DataContent dataContent = new DataContent();
-            dataContent.Data = data;
-            while (data.Length > 0)
-            {
-                // print:
-                // [Message] remote -> local | time
-                // data
-                // [MessageEnd]
-                Console.WriteLine();
-                Console.WriteLine(string.Format("[Message] {0} -> {1} | {2}",
-                    e.Handler.GetSockBase().GetSocket().RemoteEndPoint.ToString(),
-                    e.Handler.GetSockBase().GetSocket().LocalEndPoint.ToString(),
-                    DateTime.Now.ToString()));
-                dataContent.Type = DataProtocolType.Text;
-                _protocolList.Text.FromLowLayerToHere(dataContent);
-
-                data = e.BufferMgr.GetAdequateBytes();
-                dataContent = new DataContent();
-                dataContent.Data = data;
-            }
-            Console.Write("> ");
+            ProcessDataFromBuffer(e.BufferMgr, e.Handler);
         }
 
         // the connection might be a failed one
@@ -126,6 +104,33 @@ namespace SocketApp
                 Console.Write("> ");
             }
             catch (ObjectDisposedException) { }
+        }
+        
+        private void ProcessDataFromBuffer(BufferMgr bufferMgr, SockMgr sockMgr)
+        {
+            byte[] data;
+
+            data = bufferMgr.GetAdequateBytes();
+            DataContent dataContent = new DataContent();
+            dataContent.Data = data;
+            while (data.Length > 0)
+            {
+                // print:
+                // [Message] remote -> local | time
+                // data
+                // [MessageEnd]
+                Console.WriteLine();
+                Console.WriteLine(string.Format("[Message] {0} -> {1} | {2}",
+                    sockMgr.GetSockBase().GetSocket().RemoteEndPoint.ToString(),
+                    sockMgr.GetSockBase().GetSocket().LocalEndPoint.ToString(),
+                    DateTime.Now.ToString()));
+                dataContent.Type = DataProtocolType.Text;
+                _protocolList.Text.FromLowLayerToHere(dataContent);
+
+                data = bufferMgr.GetAdequateBytes();
+                dataContent = new DataContent();
+                dataContent.Data = data;
+            }
         }
     }
 }

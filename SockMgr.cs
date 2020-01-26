@@ -1,5 +1,3 @@
-using System.Net.Sockets;
-
 namespace SocketApp
 {
     public class SockMgrEventArgs
@@ -47,14 +45,14 @@ namespace SocketApp
         SockBase _sockBase;
         public bool IsShutdown = false;
 
-        public SockMgr(SockBase sockBase, SockController sockController, Protocol.ProtocolFactory protocolFactory)
+        public SockMgr(SockBase sockBase, SockController sockController, Protocol.ProtocolFactoryOptions protocolOptions)
         {
             _sockBase = sockBase;
             _sockBase.SocketAcceptEvent += OnSocketAccept;
             _sockBase.SocketConnectEvent += OnSocketConnect;
             _sockBase.SocketReceiveEvent += OnSocketReceive;
             _sockBase.SocketShutdownBeginEvent += OnSocketShutdownBegin;
-            _protocolFactory = protocolFactory;
+            _protocolFactory = new Protocol.ProtocolFactory(_sockController, this, protocolOptions);
             _protocolList = _protocolFactory.GetProtocolList();
             _sockController = sockController;
 
@@ -66,7 +64,7 @@ namespace SocketApp
         {
             // Notice: all clients derived from the same listener share the same factory,
             //  which means the modification on the shared factory will affect factory in other clients
-            SockMgr client = new SockMgr(e.Handler, _sockController, _protocolFactory);
+            SockMgr client = new SockMgr(e.Handler, _sockController, _protocolFactory.GetOptions());
             SockMgrAcceptEventArgs arg = new SockMgrAcceptEventArgs(client);
             _responser.OnSockMgrAccept(this, arg);
             SockMgrAcceptEvent?.Invoke(this, arg);

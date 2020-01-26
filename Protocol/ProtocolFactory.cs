@@ -12,15 +12,18 @@ namespace SocketApp.Protocol
     public class ProtocolFactory
     {
         private SockController _sockController;
+        private SockMgr _sockMgr;
         private ProtocolFactoryOptions _options = new ProtocolFactoryOptions();
-        public ProtocolFactory(SockController sockController, ProtocolFactoryOptions options)
+        public ProtocolFactory(SockController sockController, SockMgr sockMgr, ProtocolFactoryOptions options)
         {
             _sockController = sockController;
+            _sockMgr = sockMgr;
             _options = options;
         }
-        public ProtocolFactory(SockController sockController)
+        public ProtocolFactory(SockController sockController, SockMgr sockMgr)
         {
             _sockController = sockController;
+            _sockMgr = sockMgr;
         }
 
         public void SetOptions(ProtocolFactoryOptions options)
