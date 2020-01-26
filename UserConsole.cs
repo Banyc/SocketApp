@@ -223,26 +223,36 @@ namespace SocketApp
 
         static void InterfaceMenu(SockMgr sockMgr)
         {
-            Console.WriteLine("[Interface Menu]");
-            Console.WriteLine("1. Send");
-            Console.WriteLine("2. Close");
-            Console.WriteLine("3. Is Host?");
-
-            Console.Write("> ");
-            string sel = Console.ReadLine();
-            switch (sel)
+            bool isExit = false;
+            while (!isExit && !sockMgr.IsShutdown)
             {
-                case "1":
-                    SendConsole(sockMgr);
-                    break;
-                case "2":
-                    sockMgr.Shutdown();
-                    break;
-                case "3":
-                    Console.WriteLine(sockMgr.GetSockBase().IsHost.ToString());
-                    break;
-                default:
-                    break;
+                Console.WriteLine(string.Format("[Interface Menu] {0} -> {1}",
+                    sockMgr.GetSockBase().GetSocket().LocalEndPoint.ToString(),
+                    sockMgr.GetSockBase().GetSocket().RemoteEndPoint.ToString()));
+                Console.WriteLine("1. Send");
+                Console.WriteLine("2. Close");
+                Console.WriteLine("3. Is Host?");
+                Console.WriteLine("4. Exit");
+
+                Console.Write("> ");
+                string sel = Console.ReadLine();
+                switch (sel)
+                {
+                    case "1":
+                        SendConsole(sockMgr);
+                        break;
+                    case "2":
+                        sockMgr.Shutdown();
+                        break;
+                    case "3":
+                        Console.WriteLine(sockMgr.GetSockBase().IsHost.ToString());
+                        break;
+                    case "4":
+                        isExit = true;
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 

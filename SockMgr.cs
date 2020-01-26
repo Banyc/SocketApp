@@ -45,7 +45,7 @@ namespace SocketApp
         Protocol.ProtocolList _protocolList;
         Protocol.ProtocolFactory _protocolFactory;
         SockBase _sockBase;
-        bool _isShutdown = false;
+        public bool IsShutdown = false;
 
         public SockMgr(SockBase sockBase, SockList sockList, Protocol.ProtocolFactory protocolFactory)
         {
@@ -113,7 +113,7 @@ namespace SocketApp
 
         public void Shutdown()
         {
-            _isShutdown = true;
+            this.IsShutdown = true;
             _sockBase.Shutdown();
         }
     }
