@@ -1,43 +1,40 @@
-using System.Text;
 using System.Net;
 using System.Net.Sockets;
-using System.Collections.Generic;
 using SocketApp.Protocol;
 
 namespace SocketApp
 {
+    public class SockFactoryOptions
+    {
+        public IPAddress ListenerIpAddress;
+        public int ListenerPort;
+        public int ClientPort = -1;
+        public int TimesToTry = 1;  // For client only
+        public ProtocolFactoryOptions ProtocolOptions = new ProtocolFactoryOptions();
+    }
+
     // build SockMgr and connect it to Responser
     public class SockFactory
     {
         public event SockMgr.SockMgrAcceptEventHandler SockMgrAcceptEvent;
         public event SockMgr.SockMgrConnectEventHandler SockMgrConnectEvent;
         private SockController _sockController;
-        IPAddress _ipAddress;
-        int _listenerPort = 11000;
-        int _localPort = -1;  // not for listener
-        ProtocolFactoryOptions _protocolOptions = new ProtocolFactoryOptions();
+        SockFactoryOptions _options;
 
         public SockFactory(SockController controller)
         {
             _sockController = controller;
         }
 
-        public void SetConfig(string ipAddress, int remotePort, int localPort = -1)  // TODO: add Protocol
+        public void SetOptions(SockFactoryOptions options)
         {
-            _ipAddress = IPAddress.Parse(ipAddress);
-            _listenerPort = remotePort;
-            _localPort = localPort;
-        }
-
-        public void SetProtocolOptions(Protocol.ProtocolFactoryOptions options)
-        {
-            _protocolOptions = options;
+            _options = options;
         }
 
         public SockMgr GetTcpListener()
         {
             IPAddress ipAddress = IPAddress.Parse("0.0.0.0");
-            IPEndPoint localEndPoint = new IPEndPoint(ipAddress, _listenerPort);
+            IPEndPoint localEndPoint = new IPEndPoint(ipAddress, _options.ListenerPort);
 
             // Create a TCP/IP socket.  
             Socket listener = new Socket(ipAddress.AddressFamily,
@@ -49,7 +46,7 @@ namespace SocketApp
 
             SockBase sockBase = new SockBase(listener, SocketRole.Listener, true);
             // set config to `protocolFactory`
-            ProtocolFactory protocolFactory = new ProtocolFactory(_protocolOptions);
+            ProtocolFactory protocolFactory = new ProtocolFactory(_options.ProtocolOptions);
             SockMgr sockMgr = new SockMgr(sockBase, _sockController, protocolFactory);
 
             listener.Bind(localEndPoint);
@@ -70,20 +67,20 @@ namespace SocketApp
             SockMgrAcceptEvent?.Invoke(sender, e);
         }
 
-        public void BuildTcpClient(int timesToTry)
+        public void BuildTcpClient()
         {
-            Socket sock = new Socket(_ipAddress.AddressFamily,
+            Socket sock = new Socket(_options.ListenerIpAddress.AddressFamily,
                 SocketType.Stream, ProtocolType.Tcp);
 
-            if (_localPort >= 0)
-                sock.Bind(new IPEndPoint(IPAddress.Any, _localPort));
+            if (_options.ClientPort >= 0)
+                sock.Bind(new IPEndPoint(IPAddress.Any, _options.ClientPort));
 
             SockBase sockBase = new SockBase(sock, SocketRole.Client, false);
             // set config to `protocolFactory`
-            ProtocolFactory protocolFactory = new ProtocolFactory(_protocolOptions);
+            ProtocolFactory protocolFactory = new ProtocolFactory(_options.ProtocolOptions);
             SockMgr sockMgr = new SockMgr(sockBase, _sockController, protocolFactory);
 
-            sockMgr.GetSockBase().StartConnect(new IPEndPoint(_ipAddress, _listenerPort), timesToTry);
+            sockMgr.GetSockBase().StartConnect(new IPEndPoint(_options.ListenerIpAddress, _options.ListenerPort), _options.TimesToTry);
         }
         // return
         private void OnSocketConnect(object sender, SockMgrConnectEventArgs e)
@@ -94,15 +91,15 @@ namespace SocketApp
         // <https://gist.github.com/louis-e/888d5031190408775ad130dde353e0fd>
         public SockMgr GetUdpListener()
         {
-            Socket listener = new Socket(_ipAddress.AddressFamily,
+            Socket listener = new Socket(_options.ListenerIpAddress.AddressFamily,
                 SocketType.Dgram, ProtocolType.Udp);
 
             listener.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.ReuseAddress, true);
-            listener.Bind(new IPEndPoint(_ipAddress, _listenerPort));
+            listener.Bind(new IPEndPoint(_options.ListenerIpAddress, _options.ListenerPort));
 
             SockBase sockBase = new SockBase(listener, SocketRole.Listener, true);
             // set config to `protocolFactory`
-            ProtocolFactory protocolFactory = new ProtocolFactory(_protocolOptions);
+            ProtocolFactory protocolFactory = new ProtocolFactory(_options.ProtocolOptions);
             SockMgr sockMgr = new SockMgr(sockBase, _sockController, protocolFactory);
 
             return sockMgr;
@@ -110,16 +107,16 @@ namespace SocketApp
 
         public SockMgr GetUdpClient()
         {
-            Socket sock = new Socket(_ipAddress.AddressFamily,
+            Socket sock = new Socket(_options.ListenerIpAddress.AddressFamily,
                 SocketType.Dgram, ProtocolType.Udp);
 
             SockBase sockBase = new SockBase(sock, SocketRole.Client, false);
             // set config to `protocolFactory`
-            ProtocolFactory protocolFactory = new ProtocolFactory(_protocolOptions);
+            ProtocolFactory protocolFactory = new ProtocolFactory(_options.ProtocolOptions);
             SockMgr sockMgr = new SockMgr(sockBase, _sockController, protocolFactory);
 
             // TODO: use BeginConnect instead
-            sock.Connect(new IPEndPoint(_ipAddress, _listenerPort));
+            sock.Connect(new IPEndPoint(_options.ListenerIpAddress, _options.ListenerPort));
 
             return sockMgr;
         }

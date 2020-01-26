@@ -1,7 +1,6 @@
-using System.Net.Mime;
-using System.Text;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using SocketApp.Protocol;
 
 namespace SocketApp
@@ -10,7 +9,6 @@ namespace SocketApp
     public class Responser
     {
         SockController _sockController;
-
         Protocol.ProtocolList _protocolList;
         SockMgr _sockMgr;
 

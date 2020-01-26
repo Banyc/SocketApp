@@ -1,20 +1,23 @@
+using System.Net;
 using System.IO;
 using System.Net.Sockets;
 using System;
-using System.Collections.Generic;
 
 namespace SocketApp
 {
     // Actively raise some operations to socket
     public class UserConsole
     {
-        SockController _sockController = new SockController();
-        SockFactory _factory;
+        SockController _sockController;
         Protocol.ProtocolFactoryOptions _protocolOptions = new Protocol.ProtocolFactoryOptions();
+        
+        public UserConsole(SockController sockController)
+        {
+            _sockController = sockController;
+        }
 
         public void ConsoleEntry(string[] args)
         {
-            _factory = new SockFactory(_sockController);
             GeneralConcole();
         }
 
@@ -115,6 +118,7 @@ namespace SocketApp
 
         void BuildListenerConsole()
         {
+            SockFactoryOptions options = new SockFactoryOptions();
             // collect config
             Console.WriteLine("[Build Listener]");
             Console.WriteLine("1. TCP Server");
@@ -136,15 +140,13 @@ namespace SocketApp
                 localPort = 11000;
             else
                 localPort = int.Parse(localPortStr);
+            options.ListenerIpAddress = IPAddress.Parse(localIpAddr);
+            options.ListenerPort = localPort;
             // begin to build
-            _factory.SetProtocolOptions(_protocolOptions);
             switch (sel)
             {
                 case "1":
-                    _factory.SetConfig(localIpAddr, localPort);
-                    SockMgr listenerMgr = _factory.GetTcpListener();
-                    _factory.ServerAccept(listenerMgr);
-                    _sockController.GetSockList().Listeners.Add(listenerMgr);
+                    _sockController.BeginBuildTcp(options, SocketRole.Listener);
                     break;
                 case "2":
                     // TODO
@@ -156,6 +158,7 @@ namespace SocketApp
 
         void BuildClientConsole()
         {
+            SockFactoryOptions options = new SockFactoryOptions();
             // collecting config
             Console.WriteLine("Enter server IP address (leave blank for 127.0.0.1:11000)");
             Console.Write("> ");
@@ -163,7 +166,8 @@ namespace SocketApp
             int timesToTry = -1;
             if (ipAddr == "")
             {
-                _factory.SetConfig("127.0.0.1", 11000);
+                options.ListenerIpAddress = IPAddress.Parse("127.0.0.1");
+                options.ListenerPort = 11000;
                 timesToTry = 1;
             }
             else
@@ -186,11 +190,14 @@ namespace SocketApp
                 {
                     if (localPortStr == "")
                     {
-                        _factory.SetConfig(ipAddr, remotePort);
+                        options.ListenerIpAddress = IPAddress.Parse(ipAddr);
+                        options.ListenerPort = remotePort;
                     }
                     else
                     {
-                        _factory.SetConfig(ipAddr, remotePort, int.Parse(localPortStr));
+                        options.ListenerIpAddress = IPAddress.Parse(ipAddr);
+                        options.ListenerPort = remotePort;
+                        options.ClientPort = int.Parse(localPortStr);
                     }
                 }
                 catch (SocketException ex)
@@ -206,13 +213,11 @@ namespace SocketApp
                     }
                 }
             }
+            options.TimesToTry = timesToTry;
+            options.ProtocolOptions = _protocolOptions;
 
             // begin to build
-            _factory.SetProtocolOptions(_protocolOptions);
-            if (timesToTry > 0)
-                _factory.BuildTcpClient(timesToTry);
-            else
-                return;
+            _sockController.BeginBuildTcp(options, SocketRole.Client);
         }
 
         static void InterfaceMenu(SockMgr sockMgr)

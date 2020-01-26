@@ -7,7 +7,8 @@ namespace SocketApp
         {
             UnitTest tester = new UnitTest();
             tester.Test();
-            UserConsole console = new UserConsole();
+            SockController controller = new SockController();
+            UserConsole console = new UserConsole(controller);
             console.ConsoleEntry(args);
         }
     }
