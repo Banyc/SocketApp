@@ -10,7 +10,7 @@ namespace SocketApp
     {
         SockController _sockController;
         Protocol.ProtocolFactoryOptions _protocolOptions = new Protocol.ProtocolFactoryOptions();
-        
+
         public UserConsole(SockController sockController)
         {
             _sockController = sockController;
@@ -235,23 +235,29 @@ namespace SocketApp
 
                 Console.Write("> ");
                 string sel = Console.ReadLine();
-                switch (sel)
+                if (sockMgr.IsShutdown)
+                    break;
+                try
                 {
-                    case "1":
-                        SendConsole(sockMgr);
-                        break;
-                    case "2":
-                        sockMgr.Shutdown();
-                        break;
-                    case "3":
-                        Console.WriteLine(sockMgr.GetSockBase().IsHost.ToString());
-                        break;
-                    case "4":
-                        isExit = true;
-                        break;
-                    default:
-                        break;
+                    switch (sel)
+                    {
+                        case "1":
+                            SendConsole(sockMgr);
+                            break;
+                        case "2":
+                            sockMgr.Shutdown();
+                            break;
+                        case "3":
+                            Console.WriteLine(sockMgr.GetSockBase().IsHost.ToString());
+                            break;
+                        case "4":
+                            isExit = true;
+                            break;
+                        default:
+                            break;
+                    }
                 }
+                catch (NullReferenceException) { }  // in case the remote has shutdown
             }
         }
 
