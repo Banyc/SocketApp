@@ -24,6 +24,7 @@ namespace SocketApp.Protocol
             if (dataContent.Data == null)
             {
                 dataContent.Data = "<Unintelligible>";
+                NextHighLayerEvent?.Invoke(dataContent);
                 return;
             }
             string data = Encoding.UTF8.GetString((byte[])dataContent.Data);

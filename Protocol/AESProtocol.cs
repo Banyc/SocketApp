@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
@@ -80,10 +81,12 @@ namespace SocketApp.Protocol
         {
             _aesAlg.GenerateIV();
             ICryptoTransform encryptor = _aesAlg.CreateEncryptor();
+            byte[] encryptedData = PerformCryptography(data, encryptor);
+
             List<byte> iv_data = new List<byte>();
             iv_data.AddRange(_aesAlg.IV);
-            iv_data.AddRange(data);
-            return PerformCryptography(iv_data.ToArray(), encryptor);
+            iv_data.AddRange(encryptedData);
+            return iv_data.ToArray();
         }
 
         private byte[] PerformCryptography(byte[] data, ICryptoTransform cryptoTransform)

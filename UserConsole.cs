@@ -38,6 +38,10 @@ namespace SocketApp
                 Console.WriteLine("8. Exit");
                 Console.WriteLine("9. Crypto Console");
                 Console.WriteLine("10. Manage protocols");
+                if (!_protocolOptions.EnableAes)
+                {
+                    Console.WriteLine("[Warning] AES is not enabled");
+                }
                 
                 Console.Write("> ");
                 string sel = Console.ReadLine();
