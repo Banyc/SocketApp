@@ -78,6 +78,7 @@ namespace SocketApp
         }
         private void OnSocketShutdownBegin(object sender, SocketShutdownBeginEventArgs e)
         {
+            this.IsShutdown = true;
             SockMgrShutdownBeginEventArgs arg = new SockMgrShutdownBeginEventArgs(this, e.IsShutdown);
             _responser.OnSockMgrShutdownBegin(this, arg);
             SockMgrShutdownBeginEvent?.Invoke(this, arg);
