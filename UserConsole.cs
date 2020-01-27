@@ -36,8 +36,9 @@ namespace SocketApp
                 Console.WriteLine("6. Build new Listener");
                 Console.WriteLine("7. Listener mode");  // manage listeners
                 Console.WriteLine("8. Exit");
-                Console.WriteLine("9. Create Keys");
-                Console.WriteLine("10. Set Keys");
+                Console.WriteLine("9. Crypto Console");
+                Console.WriteLine("10. Manage protocols");
+                
                 Console.Write("> ");
                 string sel = Console.ReadLine();
                 switch (sel)
@@ -74,10 +75,10 @@ namespace SocketApp
                         isExit = true;
                         break;
                     case "9":
-                        KeyGenConsole();
+                        CryptoConsole();
                         break;
                     case "10":
-                        SetKeyConsole();
+                        ProtocolConsole();
                         break;
                     default:
                         break;
@@ -142,6 +143,7 @@ namespace SocketApp
                 localPort = int.Parse(localPortStr);
             options.ListenerIpAddress = IPAddress.Parse(localIpAddr);
             options.ListenerPort = localPort;
+            options.ProtocolOptions = _protocolOptions;
             // begin to build
             switch (sel)
             {
@@ -286,6 +288,29 @@ namespace SocketApp
             sockMgr.SendText(msg);
         }
 
+        void CryptoConsole()
+        {
+            Console.WriteLine("[Crypto Console]");
+            Console.WriteLine("1. Create Keys");
+            Console.WriteLine("2. Set Keys");
+            Console.WriteLine("3. Clean Key");
+            Console.Write("> ");
+            string input = Console.ReadLine();
+            switch (input)
+            {
+                case "1":
+                    KeyGenConsole();
+                    break;
+                case "2":
+                    SetKeyConsole();
+                    break;
+                case "3":
+                    _protocolOptions.AesKey = null;
+                    _protocolOptions.EnableAes = false;
+                    break;
+            }
+        }
+
         static void KeyGenConsole()
         {
             Console.WriteLine("Which?");
@@ -315,8 +340,43 @@ namespace SocketApp
             input = Console.ReadLine();
             if (input == "")
                 input = "./Aes.key";
-            _protocolOptions.AesKey = File.ReadAllBytes(input);
-            _protocolOptions.EnableAes = true;
+            try
+            {
+                _protocolOptions.AesKey = File.ReadAllBytes(input);
+                _protocolOptions.EnableAes = true;
+            }
+            catch (FileNotFoundException)
+            {
+                Console.WriteLine("[Error] File not found.");
+            }
+        }
+
+        private void ProtocolConsole()
+        {
+            Console.WriteLine("[Protocol Console]");
+            Console.WriteLine("1. Select protocol stack");
+            Console.Write("> ");
+            string input = Console.ReadLine();
+            switch (input)
+            {
+                case "1":
+                    SelectProtocolStackConsole();
+                    break;
+            }
+        }
+
+        private void SelectProtocolStackConsole()
+        {
+            Console.WriteLine("[Please select]");
+            int index = 0;
+            foreach (Protocol.ProtocolStackType type in (Protocol.ProtocolStackType[]) Enum.GetValues(typeof(Protocol.ProtocolStackType)))
+            {
+                Console.WriteLine($"{index}. {type.ToString()}");
+                ++index;
+            }
+            Console.Write("> ");
+            string input = Console.ReadLine();
+            _protocolOptions.TextStackTypeOfChoice = (Protocol.ProtocolStackType)int.Parse(input);
         }
     }
 }

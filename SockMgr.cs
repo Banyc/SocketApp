@@ -52,9 +52,10 @@ namespace SocketApp
             _sockBase.SocketConnectEvent += OnSocketConnect;
             _sockBase.SocketReceiveEvent += OnSocketReceive;
             _sockBase.SocketShutdownBeginEvent += OnSocketShutdownBegin;
+            _sockController = sockController;
+            
             _protocolFactory = new Protocol.ProtocolFactory(_sockController, this, protocolOptions);
             _protocolList = _protocolFactory.GetProtocolList();
-            _sockController = sockController;
 
             Responser responser = new Responser(_sockController, _protocolList, this);
             _responser = responser;
@@ -95,6 +96,10 @@ namespace SocketApp
         {
             _protocolList = protocolList;
             _responser.SetProtocolList(_protocolList);
+        }
+        public Protocol.ProtocolList GetProtocolList()
+        {
+            return _protocolList;
         }
         public SockBase GetSockBase()
         {

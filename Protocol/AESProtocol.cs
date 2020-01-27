@@ -63,10 +63,17 @@ namespace SocketApp.Protocol
 
         private byte[] Decrypt(byte[] crypto)
         {
-            _aesAlg.IV = crypto.Take(_aesAlg.BlockSize / 8).ToArray();
-            // Create a decryptor to perform the stream transform.
-            ICryptoTransform decryptor = _aesAlg.CreateDecryptor();
-            return PerformCryptography(crypto.Skip(_aesAlg.BlockSize / 8).ToArray(), decryptor);
+            try
+            {
+                _aesAlg.IV = crypto.Take(_aesAlg.BlockSize / 8).ToArray();
+                // Create a decryptor to perform the stream transform.
+                ICryptoTransform decryptor = _aesAlg.CreateDecryptor();
+                return PerformCryptography(crypto.Skip(_aesAlg.BlockSize / 8).ToArray(), decryptor);
+            }
+            catch (CryptographicException)
+            {
+                return null;
+            }
         }
 
         private byte[] Encrypt(byte[] data)

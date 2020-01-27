@@ -12,18 +12,23 @@ namespace SocketApp.Protocol
         public event NextLowLayerEventHandler NextLowLayerEvent;
         public event NextHighLayerEventHandler NextHighLayerEvent;
 
-        public void FromHighLayerToHere(DataContent arg)
+        public void FromHighLayerToHere(DataContent dataContent)
         {
-            byte[] data = Encoding.UTF8.GetBytes((string)arg.Data);
-            arg.Data = data;
-            NextLowLayerEvent?.Invoke(arg);
+            byte[] data = Encoding.UTF8.GetBytes((string)dataContent.Data);
+            dataContent.Data = data;
+            NextLowLayerEvent?.Invoke(dataContent);
         }
 
-        public void FromLowLayerToHere(DataContent arg)
+        public void FromLowLayerToHere(DataContent dataContent)
         {
-            string data = Encoding.UTF8.GetString((byte[])arg.Data);
-            arg.Data = data;
-            NextHighLayerEvent?.Invoke(arg);
+            if (dataContent.Data == null)
+            {
+                dataContent.Data = "<Unintelligible>";
+                return;
+            }
+            string data = Encoding.UTF8.GetString((byte[])dataContent.Data);
+            dataContent.Data = data;
+            NextHighLayerEvent?.Invoke(dataContent);
         }
 
         public object GetState()

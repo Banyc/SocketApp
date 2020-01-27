@@ -114,9 +114,13 @@ namespace SocketApp.Protocol
         }
 
         // remove all Event chains
-        public object GetState()
+        public void RemoveEventChains()
         {
             UnlinkMiddleProtocols();
+        }
+
+        public object GetState()
+        {
             return _state;
         }
 

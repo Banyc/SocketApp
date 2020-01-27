@@ -7,6 +7,7 @@ namespace SocketApp.Protocol
         public byte[] AesKey;
         public byte[] RsaPriKey;
         public byte[] RsaPubKey;
+        public ProtocolStackType TextStackTypeOfChoice = ProtocolStackType.Text_Default;
     }
 
     public class ProtocolFactory
@@ -39,6 +40,24 @@ namespace SocketApp.Protocol
         public ProtocolList GetProtocolList()
         {
             ProtocolList protocolList = new ProtocolList();
+            
+            switch (_options.TextStackTypeOfChoice)
+            {
+                case ProtocolStackType.Text_Broadcast:
+                    protocolList.Text = GetBroadcastStack();
+                    break;
+                case ProtocolStackType.Text_Default:
+                    protocolList.Text = GetDefaultStack();
+                    break;
+                default:
+                    protocolList.Text = GetDefaultStack();
+                    break;
+            }
+            return protocolList;
+        }
+
+        private ProtocolStack GetDefaultStack()
+        {
             ProtocolStackState state = new ProtocolStackState();
 
             // UTF8
@@ -54,10 +73,34 @@ namespace SocketApp.Protocol
             }
 
             state.Type = DataProtocolType.Text;
-            ProtocolStack ProtocolStack = new ProtocolStack();
-            ProtocolStack.SetState(state);
-            protocolList.Text = ProtocolStack;
-            return protocolList;
+            ProtocolStack protocolStack = new ProtocolStack();
+            protocolStack.SetState(state);
+            return protocolStack;
+        }
+
+        private ProtocolStack GetBroadcastStack()
+        {
+            ProtocolStackState state = new ProtocolStackState();
+
+            BroadcastProtocolState broadcaseState = new BroadcastProtocolState();
+
+            // Config for UTF8 layer
+
+            // Config for AES layer
+            AESProtocolState aesState = new AESProtocolState();
+            if (_options.EnableAes)
+                aesState.Key = _options.AesKey;
+
+            broadcaseState.AesState = aesState;
+            broadcaseState.SockController = _sockController;
+            broadcaseState.SockMgr = _sockMgr;
+            // add to stack
+            state.MiddleProtocols.Add(new BroadcastProtocol(broadcaseState));
+
+            state.Type = DataProtocolType.Text;
+            ProtocolStack protocolStack = new ProtocolStack();
+            protocolStack.SetState(state);
+            return protocolStack;
         }
     }
 }
