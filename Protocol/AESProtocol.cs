@@ -14,6 +14,7 @@ namespace SocketApp.Protocol
         public int FeedbackSize = 128;
         public PaddingMode Padding = PaddingMode.PKCS7;  // only tested this padding
         public byte[] Key;
+        public bool Enabled = false;
     }
 
     public class AESProtocol : IProtocol
@@ -30,15 +31,21 @@ namespace SocketApp.Protocol
 
         public void FromHighLayerToHere(DataContent dataContent)
         {
-            byte[] encrypted = Encrypt((byte[])dataContent.Data);
-            dataContent.Data = encrypted;
+            if (_state.Enabled)
+            {
+                byte[] encrypted = Encrypt((byte[])dataContent.Data);
+                dataContent.Data = encrypted;
+            }
             NextLowLayerEvent?.Invoke(dataContent);
         }
 
         public void FromLowLayerToHere(DataContent dataContent)
         {
-            byte[] decrypted = Decrypt((byte[])dataContent.Data);
-            dataContent.Data = decrypted;
+            if (_state.Enabled)
+            {
+                byte[] decrypted = Decrypt((byte[])dataContent.Data);
+                dataContent.Data = decrypted;
+            }
             NextHighLayerEvent?.Invoke(dataContent);
         }
 

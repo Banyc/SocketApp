@@ -38,7 +38,7 @@ namespace SocketApp
                 Console.WriteLine("8. Exit");
                 Console.WriteLine("9. Crypto Console");
                 Console.WriteLine("10. Manage protocols");
-                if (!_protocolOptions.EnableAes)
+                if (!_protocolOptions.AESProtocolState.Enabled)
                 {
                     Console.WriteLine("[Warning] AES is not enabled");
                 }
@@ -309,8 +309,8 @@ namespace SocketApp
                     SetKeyConsole();
                     break;
                 case "3":
-                    _protocolOptions.AesKey = null;
-                    _protocolOptions.EnableAes = false;
+                    _protocolOptions.AESProtocolState.Key = null;
+                    _protocolOptions.AESProtocolState.Enabled = false;
                     break;
             }
         }
@@ -346,8 +346,8 @@ namespace SocketApp
                 input = "./Aes.key";
             try
             {
-                _protocolOptions.AesKey = File.ReadAllBytes(input);
-                _protocolOptions.EnableAes = true;
+                _protocolOptions.AESProtocolState.Key = File.ReadAllBytes(input);
+                _protocolOptions.AESProtocolState.Enabled = true;
             }
             catch (FileNotFoundException)
             {

@@ -29,6 +29,14 @@ namespace SocketApp
             _protocolList.Text.NextLowLayerEvent += OnNextLowLayerEvent;
         }
 
+        public void RemoveProtocolList()
+        {
+            _protocolList.Text.NextHighLayerEvent -= OnNextHighLayerEvent;
+            _protocolList.Text.NextLowLayerEvent -= OnNextLowLayerEvent;
+            _protocolList.Text.RemoveEventChains();
+            _protocolList.Text = null;
+        }
+
         // respond to event at the bottom of the protocol stack
         private void OnNextLowLayerEvent(Protocol.DataContent dataContent)
         {
