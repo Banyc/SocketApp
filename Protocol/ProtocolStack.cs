@@ -127,6 +127,7 @@ namespace SocketApp.Protocol
         // setup Event chains
         public void SetState(object state)
         {
+            UnlinkMiddleProtocols();
             _state = (ProtocolStackState)state;
             LinkMiddleProtocols();
         }

@@ -21,6 +21,7 @@ namespace SocketApp
 
         public void SetProtocolList(Protocol.ProtocolList protocolList)
         {
+            RemoveProtocolList();
             _protocolList = protocolList;
             // TODO: finish DEMO for File protocol
             // _protocolList.File.NextHighLayerEvent += OnNextHighLayerEvent;
@@ -31,6 +32,8 @@ namespace SocketApp
 
         public void RemoveProtocolList()
         {
+            if (_protocolList == null)
+                return;
             _protocolList.Text.NextHighLayerEvent -= OnNextHighLayerEvent;
             _protocolList.Text.NextLowLayerEvent -= OnNextLowLayerEvent;
             _protocolList.Text.RemoveEventChains();

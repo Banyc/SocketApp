@@ -58,15 +58,17 @@ namespace SocketApp.Protocol
         {
             AESProtocolState state = (AESProtocolState)stateObject;
             _state = state;
-
-            // the order is important
-            // set Key and IV after setting their sizes
-            _aesAlg.Mode = _state.Mode;
-            _aesAlg.KeySize = _state.KeySize;
-            _aesAlg.BlockSize = _state.BlockSize;
-            _aesAlg.FeedbackSize = _state.FeedbackSize;
-            _aesAlg.Padding = _state.Padding;
-            _aesAlg.Key = _state.Key;
+            if (state.Enabled)
+            {
+                // the order is important
+                // set Key and IV after setting their sizes
+                _aesAlg.Mode = _state.Mode;
+                _aesAlg.KeySize = _state.KeySize;
+                _aesAlg.BlockSize = _state.BlockSize;
+                _aesAlg.FeedbackSize = _state.FeedbackSize;
+                _aesAlg.Padding = _state.Padding;
+                _aesAlg.Key = _state.Key;
+            }
         }
 
         private byte[] Decrypt(byte[] crypto)
