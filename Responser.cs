@@ -56,6 +56,7 @@ namespace SocketApp
                     Console.Write("> ");
                     break;
             }
+            _sockMgr.RaiseSockMgrProtocolTopEvent(dataContent);
         }
 
         // received new message

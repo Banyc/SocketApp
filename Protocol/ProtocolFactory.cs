@@ -7,7 +7,9 @@ namespace SocketApp.Protocol
         public byte[] RsaPubKey;
         public ProtocolStackType TextStackTypeOfChoice = ProtocolStackType.Text_Default;
         public AESProtocolState AESProtocolState = new AESProtocolState();
-
+        // TODO: add customized sub factory for customized protocol stack
+        public bool IsCustom = false;
+        public IProtocolFactory Factory = null;
     }
 
     public class ProtocolFactory

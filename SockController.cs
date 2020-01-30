@@ -19,7 +19,9 @@ namespace SocketApp
         public delegate void SockMgrShutdownBeginEventHandler(object sender, SockMgrShutdownBeginEventArgs e);
         public event SockMgrShutdownBeginEventHandler SockMgrShutdownBeginEvent;
         public delegate void SockMgrReceiveEventHandler(object sender, SockMgrReceiveEventArgs e);
-        public event SockMgrReceiveEventHandler SockMgrReceiveEvent;
+        public event SockMgrReceiveEventHandler SockMgrReceiveEvent;  // when the data is still in raw byte[] form  // if extract data from BufferMgr, the later part could not receive it
+        public delegate void SockMgrProtocolTopEventHandler(object sender, SockMgrProtocolTopEventArgs e);
+        public event SockMgrProtocolTopEventHandler SockMgrProtocolTopEvent;  // access processed data here
         SockList _sockList { set; get; } = new SockList();
         SockFactory _sockFactory;
         Mutex _shutdownLock = new Mutex();  // eliminate race condition in `_sockList`
@@ -69,6 +71,10 @@ namespace SocketApp
         private void OnSockMgrReceive(object sender, SockMgrReceiveEventArgs e)
         {
             SockMgrReceiveEvent?.Invoke(sender, e);
+        }
+        private void OnSockMgrProtocolTop(object sender, SockMgrProtocolTopEventArgs e)
+        {
+            SockMgrProtocolTopEvent?.Invoke(sender, e);
         }
         // adapt events from new SockMgr
         private void RegisterNewSockMgr(SockMgr sockMgr)

@@ -26,6 +26,13 @@ namespace SocketApp
         public BufferMgr BufferMgr;
     }
 
+    public class SockMgrProtocolTopEventArgs : SockMgrEventArgs
+    {
+        public SockMgrProtocolTopEventArgs(SockMgr handler, Protocol.DataContent dataContent) { DataContent = dataContent; base.Handler = handler; }
+        public Protocol.DataContent DataContent;
+    }
+
+
     // a wrapper of `SockBase` and the corresponding `Responser`
     public class SockMgr
     {
@@ -37,6 +44,8 @@ namespace SocketApp
         public event SockMgrShutdownBeginEventHandler SockMgrShutdownBeginEvent;
         public delegate void SockMgrReceiveEventHandler(object sender, SockMgrReceiveEventArgs e);
         public event SockMgrReceiveEventHandler SockMgrReceiveEvent;
+        public delegate void SockMgrProtocolTopEventHandler(object sender, SockMgrProtocolTopEventArgs e);
+        public event SockMgrProtocolTopEventHandler SockMgrProtocolTopEvent;
 
         Responser _responser;
         SockController _sockController;
@@ -89,6 +98,7 @@ namespace SocketApp
             SockMgrReceiveEvent?.Invoke(this, arg);
             _responser.OnSockMgrReceive(this, arg);
         }
+
         public Responser GetResponser()
         {
             return _responser;
@@ -113,6 +123,10 @@ namespace SocketApp
             dataContent.Type = Protocol.DataProtocolType.Text;
             dataContent.Data = data;
             _ProtocolStackList.Text.FromHighLayerToHere(dataContent);
+        }
+        public void RaiseSockMgrProtocolTopEvent(Protocol.DataContent dataContent)
+        {
+            SockMgrProtocolTopEvent?.Invoke(this, new SockMgrProtocolTopEventArgs(this, dataContent));
         }
 
         public void Shutdown()
