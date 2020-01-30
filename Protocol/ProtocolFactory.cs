@@ -8,7 +8,7 @@ namespace SocketApp.Protocol
         public ProtocolStackType StackTypeOfChoice = ProtocolStackType.Default;
         public AESProtocolState AESProtocolState = new AESProtocolState();
         // TODO: add customized sub factory for customized protocol stack
-        public bool IsCustom = false;
+        public bool IsCustom = false;  // if true, the Factory below will be used
         public IProtocolFactory Factory = null;
     }
 
@@ -42,6 +42,11 @@ namespace SocketApp.Protocol
         public ProtocolStack GetProtocolStack()
         {
             ProtocolStack ProtocolStack;
+
+            if (_options.IsCustom)
+            {
+                return _options.Factory.GetProtocolStack();
+            }
 
             switch (_options.StackTypeOfChoice)
             {
