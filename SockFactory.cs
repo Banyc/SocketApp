@@ -76,6 +76,7 @@ namespace SocketApp
             SockBase sockBase = new SockBase(sock, SocketRole.Client, false);
             SockMgr sockMgr = new SockMgr(sockBase, _sockController, _options.ProtocolOptions);
 
+            sockMgr.SockMgrConnectEvent += OnSocketConnect;
             sockMgr.GetSockBase().StartConnect(new IPEndPoint(_options.ListenerIpAddress, _options.ListenerPort), _options.TimesToTry);
         }
         // return

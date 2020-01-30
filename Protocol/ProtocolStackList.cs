@@ -1,6 +1,6 @@
 namespace SocketApp.Protocol
 {
-    public class ProtocolList
+    public class ProtocolStackList
     {
         public ProtocolStack Text;
         public ProtocolStack File;

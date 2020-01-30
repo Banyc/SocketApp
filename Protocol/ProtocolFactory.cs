@@ -7,6 +7,7 @@ namespace SocketApp.Protocol
         public byte[] RsaPubKey;
         public ProtocolStackType TextStackTypeOfChoice = ProtocolStackType.Text_Default;
         public AESProtocolState AESProtocolState = new AESProtocolState();
+
     }
 
     public class ProtocolFactory
@@ -36,23 +37,23 @@ namespace SocketApp.Protocol
             return _options;
         }
 
-        public ProtocolList GetProtocolList()
+        public ProtocolStackList GetProtocolStackList()
         {
-            ProtocolList protocolList = new ProtocolList();
+            ProtocolStackList ProtocolStackList = new ProtocolStackList();
 
             switch (_options.TextStackTypeOfChoice)
             {
                 case ProtocolStackType.Text_Broadcast:
-                    protocolList.Text = GetBroadcastStack();
+                    ProtocolStackList.Text = GetBroadcastStack();
                     break;
                 case ProtocolStackType.Text_Default:
-                    protocolList.Text = GetDefaultStack();
+                    ProtocolStackList.Text = GetDefaultStack();
                     break;
                 default:
-                    protocolList.Text = GetDefaultStack();
+                    ProtocolStackList.Text = GetDefaultStack();
                     break;
             }
-            return protocolList;
+            return ProtocolStackList;
         }
 
         private ProtocolStack GetDefaultStack()

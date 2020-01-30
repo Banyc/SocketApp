@@ -12,6 +12,14 @@ namespace SocketApp
     // mother of all sockets under one process
     public class SockController
     {
+        public delegate void SockMgrAcceptEventHandler(object sender, SockMgrAcceptEventArgs e);
+        public event SockMgrAcceptEventHandler SockMgrAcceptEvent;
+        public delegate void SockMgrConnectEventHandler(object sender, SockMgrConnectEventArgs e);
+        public event SockMgrConnectEventHandler SockMgrConnectEvent;
+        public delegate void SockMgrShutdownBeginEventHandler(object sender, SockMgrShutdownBeginEventArgs e);
+        public event SockMgrShutdownBeginEventHandler SockMgrShutdownBeginEvent;
+        public delegate void SockMgrReceiveEventHandler(object sender, SockMgrReceiveEventArgs e);
+        public event SockMgrReceiveEventHandler SockMgrReceiveEvent;
         SockList _sockList { set; get; } = new SockList();
         SockFactory _sockFactory;
         Mutex _shutdownLock = new Mutex();  // eliminate race condition in `_sockList`
@@ -19,6 +27,9 @@ namespace SocketApp
         public SockController()
         {
             _sockFactory = new SockFactory(this);
+            // adapt events from _sockFactory
+            _sockFactory.SockMgrAcceptEvent += OnSockMgrAccept;
+            _sockFactory.SockMgrConnectEvent += OnSockMgrConnect;
         }
 
         public void BeginBuildTcp(SockFactoryOptions options, SocketRole socketRole)
@@ -40,6 +51,33 @@ namespace SocketApp
             }
         }
 
+        // event handlers
+        private void OnSockMgrAccept(object sender, SockMgrAcceptEventArgs e)
+        {
+            RegisterNewSockMgr(e.Handler);
+            SockMgrAcceptEvent?.Invoke(sender, e);
+        }
+        private void OnSockMgrConnect(object sender, SockMgrConnectEventArgs e)
+        {
+            RegisterNewSockMgr(e.Handler);
+            SockMgrConnectEvent?.Invoke(sender, e);
+        }
+        private void OnSockMgrShutdownBegin(object sender, SockMgrShutdownBeginEventArgs e)
+        {
+            SockMgrShutdownBeginEvent?.Invoke(sender, e);
+        }
+        private void OnSockMgrReceive(object sender, SockMgrReceiveEventArgs e)
+        {
+            SockMgrReceiveEvent?.Invoke(sender, e);
+        }
+        // adapt events from new SockMgr
+        private void RegisterNewSockMgr(SockMgr sockMgr)
+        {
+            sockMgr.SockMgrReceiveEvent += OnSockMgrReceive;
+            sockMgr.SockMgrShutdownBeginEvent += OnSockMgrShutdownBegin;
+        }
+
+        // add sockMgr to sockList
         public void AddSockMgr(SockMgr sockMgr, SocketRole socketRole)
         {
             switch (socketRole)

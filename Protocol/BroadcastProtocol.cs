@@ -89,7 +89,7 @@ namespace SocketApp.Protocol
                     if (client == _state.SockMgr)
                         continue;
                     // find the same class from other peer sockets and activate them
-                    ProtocolStackState peerStackState = (ProtocolStackState) client.GetProtocolList().Text.GetState();
+                    ProtocolStackState peerStackState = (ProtocolStackState) client.GetProtocolStackList().Text.GetState();
                     if (typeof(BroadcastProtocol) == peerStackState.MiddleProtocols[0]?.GetType())
                     {
                         peerStackState.MiddleProtocols[0].FromHighLayerToHere(dataContent);

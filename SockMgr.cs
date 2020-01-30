@@ -40,7 +40,7 @@ namespace SocketApp
 
         Responser _responser;
         SockController _sockController;
-        Protocol.ProtocolList _protocolList;
+        Protocol.ProtocolStackList _ProtocolStackList;
         Protocol.ProtocolFactory _protocolFactory;
         SockBase _sockBase;
         public bool IsShutdown = false;
@@ -55,9 +55,9 @@ namespace SocketApp
             _sockController = sockController;
             
             _protocolFactory = new Protocol.ProtocolFactory(_sockController, this, protocolOptions);
-            _protocolList = _protocolFactory.GetProtocolList();
+            _ProtocolStackList = _protocolFactory.GetProtocolStackList();
 
-            Responser responser = new Responser(_sockController, _protocolList, this);
+            Responser responser = new Responser(_sockController, _ProtocolStackList, this);
             _responser = responser;
         }
 
@@ -67,40 +67,40 @@ namespace SocketApp
             //  which means the modification on the shared factory will affect factory in other clients
             SockMgr client = new SockMgr(e.Handler, _sockController, _protocolFactory.GetOptions());
             SockMgrAcceptEventArgs arg = new SockMgrAcceptEventArgs(client);
-            _responser.OnSockMgrAccept(this, arg);
             SockMgrAcceptEvent?.Invoke(this, arg);
+            _responser.OnSockMgrAccept(this, arg);
         }
         private void OnSocketConnect(object sender, SocketConnectEventArgs e)
         {
             SockMgrConnectEventArgs arg = new SockMgrConnectEventArgs(this, e.State);
-            _responser.OnSockMgrConnect(this, arg);
             SockMgrConnectEvent?.Invoke(this, arg);
+            _responser.OnSockMgrConnect(this, arg);
         }
         private void OnSocketShutdownBegin(object sender, SocketShutdownBeginEventArgs e)
         {
             this.IsShutdown = true;
             SockMgrShutdownBeginEventArgs arg = new SockMgrShutdownBeginEventArgs(this, e.IsShutdown);
-            _responser.OnSockMgrShutdownBegin(this, arg);
             SockMgrShutdownBeginEvent?.Invoke(this, arg);
+            _responser.OnSockMgrShutdownBegin(this, arg);
         }
         private void OnSocketReceive(object sender, SocketReceiveEventArgs e)
         {
             SockMgrReceiveEventArgs arg = new SockMgrReceiveEventArgs(this, e.BufferMgr);
-            _responser.OnSockMgrReceive(this, arg);
             SockMgrReceiveEvent?.Invoke(this, arg);
+            _responser.OnSockMgrReceive(this, arg);
         }
         public Responser GetResponser()
         {
             return _responser;
         }
-        public void SetProtocolList(Protocol.ProtocolList protocolList)
+        public void SetProtocolStackList(Protocol.ProtocolStackList ProtocolStackList)
         {
-            _protocolList = protocolList;
-            _responser.SetProtocolList(_protocolList);
+            _ProtocolStackList = ProtocolStackList;
+            _responser.SetProtocolStackList(_ProtocolStackList);
         }
-        public Protocol.ProtocolList GetProtocolList()
+        public Protocol.ProtocolStackList GetProtocolStackList()
         {
-            return _protocolList;
+            return _ProtocolStackList;
         }
         public SockBase GetSockBase()
         {
@@ -112,7 +112,7 @@ namespace SocketApp
             Protocol.DataContent dataContent = new Protocol.DataContent();
             dataContent.Type = Protocol.DataProtocolType.Text;
             dataContent.Data = data;
-            _protocolList.Text.FromHighLayerToHere(dataContent);
+            _ProtocolStackList.Text.FromHighLayerToHere(dataContent);
         }
 
         public void Shutdown()

@@ -9,35 +9,35 @@ namespace SocketApp
     public class Responser
     {
         SockController _sockController;
-        Protocol.ProtocolList _protocolList;
+        Protocol.ProtocolStackList _ProtocolStackList;
         SockMgr _sockMgr;
 
-        public Responser(SockController sockController, Protocol.ProtocolList protocolList, SockMgr sockMgr)
+        public Responser(SockController sockController, Protocol.ProtocolStackList ProtocolStackList, SockMgr sockMgr)
         {
             _sockController = sockController;
-            SetProtocolList(protocolList);
+            SetProtocolStackList(ProtocolStackList);
             _sockMgr = sockMgr;
         }
 
-        public void SetProtocolList(Protocol.ProtocolList protocolList)
+        public void SetProtocolStackList(Protocol.ProtocolStackList ProtocolStackList)
         {
-            RemoveProtocolList();
-            _protocolList = protocolList;
+            RemoveProtocolStackList();
+            _ProtocolStackList = ProtocolStackList;
             // TODO: finish DEMO for File protocol
-            // _protocolList.File.NextHighLayerEvent += OnNextHighLayerEvent;
-            // _protocolList.File.NextLowLayerEvent += OnNextLowLayerEvent;
-            _protocolList.Text.NextHighLayerEvent += OnNextHighLayerEvent;
-            _protocolList.Text.NextLowLayerEvent += OnNextLowLayerEvent;
+            // _ProtocolStackList.File.NextHighLayerEvent += OnNextHighLayerEvent;
+            // _ProtocolStackList.File.NextLowLayerEvent += OnNextLowLayerEvent;
+            _ProtocolStackList.Text.NextHighLayerEvent += OnNextHighLayerEvent;
+            _ProtocolStackList.Text.NextLowLayerEvent += OnNextLowLayerEvent;
         }
 
-        public void RemoveProtocolList()
+        public void RemoveProtocolStackList()
         {
-            if (_protocolList == null)
+            if (_ProtocolStackList == null)
                 return;
-            _protocolList.Text.NextHighLayerEvent -= OnNextHighLayerEvent;
-            _protocolList.Text.NextLowLayerEvent -= OnNextLowLayerEvent;
-            _protocolList.Text.RemoveEventChains();
-            _protocolList.Text = null;
+            _ProtocolStackList.Text.NextHighLayerEvent -= OnNextHighLayerEvent;
+            _ProtocolStackList.Text.NextLowLayerEvent -= OnNextLowLayerEvent;
+            _ProtocolStackList.Text.RemoveEventChains();
+            _ProtocolStackList.Text = null;
         }
 
         // respond to event at the bottom of the protocol stack
@@ -136,7 +136,7 @@ namespace SocketApp
                     sockMgr.GetSockBase().GetSocket().LocalEndPoint.ToString(),
                     DateTime.Now.ToString()));
                 dataContent.Type = DataProtocolType.Text;
-                _protocolList.Text.FromLowLayerToHere(dataContent);
+                _ProtocolStackList.Text.FromLowLayerToHere(dataContent);
 
                 data = bufferMgr.GetAdequateBytes();
                 dataContent = new DataContent();
