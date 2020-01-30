@@ -103,10 +103,10 @@ namespace SocketApp
         {
             return _responser;
         }
-        public void SetProtocolStackList(Protocol.ProtocolStack protocolStack)
+        public void SetProtocolStack(Protocol.ProtocolStack protocolStack)
         {
             _protocolStack = protocolStack;
-            _responser.SetProtocolStack(_protocolStack);
+            _responser.LinkProtocolStackEvents(protocolStack);
         }
         public Protocol.ProtocolStack GetProtocolStack()
         {

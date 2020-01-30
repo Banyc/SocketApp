@@ -9,35 +9,28 @@ namespace SocketApp
     public class Responser
     {
         SockController _sockController;
-        Protocol.ProtocolStack _ProtocolStack;
         SockMgr _sockMgr;
 
-        public Responser(SockController sockController, Protocol.ProtocolStack protocolStack, SockMgr sockMgr)
+        public Responser(SockController sockController, ProtocolStack protocolStack, SockMgr sockMgr)
         {
             _sockController = sockController;
-            SetProtocolStack(protocolStack);
+            LinkProtocolStackEvents(protocolStack);
             _sockMgr = sockMgr;
         }
 
-        public void SetProtocolStack(Protocol.ProtocolStack protocolStack)
+        public void LinkProtocolStackEvents(ProtocolStack protocolStack)
         {
-            RemoveProtocolStackList();
-            _ProtocolStack = protocolStack;
-            // TODO: finish DEMO for File protocol
-            // _ProtocolStackList.File.NextHighLayerEvent += OnNextHighLayerEvent;
-            // _ProtocolStackList.File.NextLowLayerEvent += OnNextLowLayerEvent;
-            _ProtocolStack.NextHighLayerEvent += OnNextHighLayerEvent;
-            _ProtocolStack.NextLowLayerEvent += OnNextLowLayerEvent;
+            UnlinkProtocolStack(protocolStack);
+            protocolStack.NextHighLayerEvent += OnNextHighLayerEvent;
+            protocolStack.NextLowLayerEvent += OnNextLowLayerEvent;
         }
 
-        public void RemoveProtocolStackList()
+        public void UnlinkProtocolStack(ProtocolStack protocolStack)
         {
-            if (_ProtocolStack == null)
+            if (protocolStack == null)
                 return;
-            _ProtocolStack.NextHighLayerEvent -= OnNextHighLayerEvent;
-            _ProtocolStack.NextLowLayerEvent -= OnNextLowLayerEvent;
-            _ProtocolStack.RemoveEventChains();
-            _ProtocolStack = null;
+            protocolStack.NextHighLayerEvent -= OnNextHighLayerEvent;
+            protocolStack.NextLowLayerEvent -= OnNextLowLayerEvent;
         }
 
         // respond to event at the bottom of the protocol stack
@@ -62,6 +55,8 @@ namespace SocketApp
         // received new message
         public void OnSockMgrReceive(Object sender, SockMgrReceiveEventArgs e)
         {
+            if (e.Handler != _sockMgr)
+                throw new Exception("this Responser is not serving the right SockMgr");
             ProcessDataFromBuffer(e.BufferMgr, e.Handler);
         }
 
@@ -137,7 +132,7 @@ namespace SocketApp
                     sockMgr.GetSockBase().GetSocket().LocalEndPoint.ToString(),
                     DateTime.Now.ToString()));
                 dataContent.Type = DataProtocolType.Text;
-                _ProtocolStack.FromLowLayerToHere(dataContent);
+                sockMgr.GetProtocolStack().FromLowLayerToHere(dataContent);
 
                 data = bufferMgr.GetAdequateBytes();
                 dataContent = new DataContent();
