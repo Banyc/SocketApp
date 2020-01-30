@@ -119,16 +119,16 @@ namespace SocketApp.Protocol
             UnlinkMiddleProtocols();
         }
 
-        public object GetState()
+        public ProtocolStackState GetState()
         {
             return _state;
         }
 
         // setup Event chains
-        public void SetState(object state)
+        public void SetState(ProtocolStackState state)
         {
             UnlinkMiddleProtocols();
-            _state = (ProtocolStackState)state;
+            _state = state;
             LinkMiddleProtocols();
         }
     }

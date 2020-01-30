@@ -102,15 +102,5 @@ namespace SocketApp.Protocol
                 _stackForClient.FromLowLayerToHere(dataContent);
             }
         }
-
-        public object GetState()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void SetState(object stateObject)
-        {
-            throw new System.NotImplementedException();
-        }
     }
 }

@@ -43,20 +43,27 @@ namespace SocketApp.Protocol
         {
             if (_state.Enabled)
             {
-                byte[] decrypted = Decrypt((byte[])dataContent.Data);
-                dataContent.Data = decrypted;
+                try
+                {
+                    byte[] decrypted;
+                    decrypted = Decrypt((byte[])dataContent.Data);
+                    dataContent.Data = decrypted;
+                }
+                catch (CryptographicException)
+                {
+                    dataContent.IsAesError = true;
+                }
             }
             NextHighLayerEvent?.Invoke(dataContent);
         }
 
-        public object GetState()
+        public AESProtocolState GetState()
         {
             return _state;
         }
 
-        public void SetState(object stateObject)
+        public void SetState(AESProtocolState state)
         {
-            AESProtocolState state = (AESProtocolState)stateObject;
             _state = state;
             if (state.Enabled)
             {
@@ -73,17 +80,10 @@ namespace SocketApp.Protocol
 
         private byte[] Decrypt(byte[] crypto)
         {
-            try
-            {
-                _aesAlg.IV = crypto.Take(_aesAlg.BlockSize / 8).ToArray();
-                // Create a decryptor to perform the stream transform.
-                ICryptoTransform decryptor = _aesAlg.CreateDecryptor();
-                return PerformCryptography(crypto.Skip(_aesAlg.BlockSize / 8).ToArray(), decryptor);
-            }
-            catch (CryptographicException)
-            {
-                return null;
-            }
+            _aesAlg.IV = crypto.Take(_aesAlg.BlockSize / 8).ToArray();
+            // Create a decryptor to perform the stream transform.
+            ICryptoTransform decryptor = _aesAlg.CreateDecryptor();
+            return PerformCryptography(crypto.Skip(_aesAlg.BlockSize / 8).ToArray(), decryptor);
         }
 
         private byte[] Encrypt(byte[] data)

@@ -31,15 +31,5 @@ namespace SocketApp.Protocol
             dataContent.Data = data;
             NextHighLayerEvent?.Invoke(dataContent);
         }
-
-        public object GetState()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void SetState(object state)
-        {
-            throw new System.NotImplementedException();
-        }
     }
 }
