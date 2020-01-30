@@ -49,7 +49,7 @@ namespace SocketApp
 
         Responser _responser;
         SockController _sockController;
-        Protocol.ProtocolStackList _ProtocolStackList;
+        Protocol.ProtocolStack _protocolStack;
         Protocol.ProtocolFactory _protocolFactory;
         SockBase _sockBase;
         public bool IsShutdown = false;
@@ -64,9 +64,9 @@ namespace SocketApp
             _sockController = sockController;
             
             _protocolFactory = new Protocol.ProtocolFactory(_sockController, this, protocolOptions);
-            _ProtocolStackList = _protocolFactory.GetProtocolStackList();
+            _protocolStack = _protocolFactory.GetProtocolStack();
 
-            Responser responser = new Responser(_sockController, _ProtocolStackList, this);
+            Responser responser = new Responser(_sockController, _protocolStack, this);
             _responser = responser;
         }
 
@@ -103,14 +103,14 @@ namespace SocketApp
         {
             return _responser;
         }
-        public void SetProtocolStackList(Protocol.ProtocolStackList ProtocolStackList)
+        public void SetProtocolStackList(Protocol.ProtocolStack protocolStack)
         {
-            _ProtocolStackList = ProtocolStackList;
-            _responser.SetProtocolStackList(_ProtocolStackList);
+            _protocolStack = protocolStack;
+            _responser.SetProtocolStack(_protocolStack);
         }
-        public Protocol.ProtocolStackList GetProtocolStackList()
+        public Protocol.ProtocolStack GetProtocolStack()
         {
-            return _ProtocolStackList;
+            return _protocolStack;
         }
         public SockBase GetSockBase()
         {
@@ -122,7 +122,7 @@ namespace SocketApp
             Protocol.DataContent dataContent = new Protocol.DataContent();
             dataContent.Type = Protocol.DataProtocolType.Text;
             dataContent.Data = data;
-            _ProtocolStackList.Text.FromHighLayerToHere(dataContent);
+            _protocolStack.FromHighLayerToHere(dataContent);
         }
         public void RaiseSockMgrProtocolTopEvent(Protocol.DataContent dataContent)
         {

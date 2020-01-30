@@ -5,7 +5,7 @@ namespace SocketApp.Protocol
         public bool EnableRsa = false;
         public byte[] RsaPriKey;
         public byte[] RsaPubKey;
-        public ProtocolStackType TextStackTypeOfChoice = ProtocolStackType.Text_Default;
+        public ProtocolStackType StackTypeOfChoice = ProtocolStackType.Default;
         public AESProtocolState AESProtocolState = new AESProtocolState();
         // TODO: add customized sub factory for customized protocol stack
         public bool IsCustom = false;
@@ -39,23 +39,23 @@ namespace SocketApp.Protocol
             return _options;
         }
 
-        public ProtocolStackList GetProtocolStackList()
+        public ProtocolStack GetProtocolStack()
         {
-            ProtocolStackList ProtocolStackList = new ProtocolStackList();
+            ProtocolStack ProtocolStack;
 
-            switch (_options.TextStackTypeOfChoice)
+            switch (_options.StackTypeOfChoice)
             {
-                case ProtocolStackType.Text_Broadcast:
-                    ProtocolStackList.Text = GetBroadcastStack();
+                case ProtocolStackType.Broadcast:
+                    ProtocolStack = GetBroadcastStack();
                     break;
-                case ProtocolStackType.Text_Default:
-                    ProtocolStackList.Text = GetDefaultStack();
+                case ProtocolStackType.Default:
+                    ProtocolStack = GetDefaultStack();
                     break;
                 default:
-                    ProtocolStackList.Text = GetDefaultStack();
+                    ProtocolStack = GetDefaultStack();
                     break;
             }
-            return ProtocolStackList;
+            return ProtocolStack;
         }
 
         private ProtocolStack GetDefaultStack()

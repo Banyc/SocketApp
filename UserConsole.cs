@@ -380,7 +380,7 @@ namespace SocketApp
             }
             Console.Write("> ");
             string input = Console.ReadLine();
-            _protocolOptions.TextStackTypeOfChoice = (Protocol.ProtocolStackType)int.Parse(input);
+            _protocolOptions.StackTypeOfChoice = (Protocol.ProtocolStackType)int.Parse(input);
         }
     }
 }
