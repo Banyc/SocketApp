@@ -41,6 +41,7 @@ namespace SocketApp.Protocol
         }
     }
 
+    // a stack of protocols
     // a full protocol stack that contains protocols/middlewares
     public class ProtocolStack : IProtocol
     {
