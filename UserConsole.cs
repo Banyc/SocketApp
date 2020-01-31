@@ -42,7 +42,7 @@ namespace SocketApp
                 {
                     Console.WriteLine("[Warning] AES is not enabled");
                 }
-                
+
                 Console.Write("> ");
                 string sel = Console.ReadLine();
                 switch (sel)
@@ -238,6 +238,12 @@ namespace SocketApp
                 Console.WriteLine("2. Close");
                 Console.WriteLine("3. Is Host?");
                 Console.WriteLine("4. Exit");
+                Console.WriteLine("5. Config AES");
+                foreach (var proto in sockMgr.GetProtocolStack().GetState().MiddleProtocols)
+                {
+                    if (proto.GetType() == typeof(Protocol.AESProtocol) && ((Protocol.AESProtocol)proto).GetState().Enabled == false)
+                        Console.WriteLine("[Warning] AES is not enabled");
+                }
 
                 Console.Write("> ");
                 string sel = Console.ReadLine();
@@ -259,11 +265,58 @@ namespace SocketApp
                         case "4":
                             isExit = true;
                             break;
+                        case "5":
+                            InterfaceAesConsole(sockMgr);
+                            break;
                         default:
                             break;
                     }
                 }
                 catch (NullReferenceException) { }  // in case the remote has shutdown
+            }
+        }
+
+        static void InterfaceAesConsole(SockMgr sockMgr)
+        {
+            byte[] key;
+            Protocol.AESProtocolState state;
+            Protocol.AESProtocol aesProto = null;
+            foreach (var proto in sockMgr.GetProtocolStack().GetState().MiddleProtocols)
+            {
+                if (proto.GetType() == typeof(Protocol.AESProtocol))
+                {
+                    aesProto = (Protocol.AESProtocol)proto;
+                    break;
+                }
+            }
+            if (aesProto == null)
+                return;
+
+            state = aesProto.GetState();
+
+            Console.WriteLine("[Interface-AES] (only for the first AES searched from Top)");
+            Console.WriteLine("1. Set Key");
+            Console.WriteLine("2. Disable Key");
+            Console.WriteLine("3. Exit");
+            Console.Write("> ");
+            string input = Console.ReadLine();
+            switch (input)
+            {
+                case "1":
+                    key = SetKeyConsole();
+                    if (key != null)
+                    {
+                        state.Key = key;
+                        state.Enabled = true;
+                        aesProto.SetState(state);
+                    }
+                    break;
+                case "2":
+                    state.Enabled = false;
+                    aesProto.SetState(state);
+                    break;
+                case "3":
+                    return;
             }
         }
 
@@ -294,10 +347,12 @@ namespace SocketApp
 
         void CryptoConsole()
         {
+            byte[] key;
             Console.WriteLine("[Crypto Console]");
             Console.WriteLine("1. Create Keys");
             Console.WriteLine("2. Set Keys");
-            Console.WriteLine("3. Clean Key");
+            Console.WriteLine("3. Clean Keys");
+            Console.WriteLine("4. Exit");
             Console.Write("> ");
             string input = Console.ReadLine();
             switch (input)
@@ -306,12 +361,20 @@ namespace SocketApp
                     KeyGenConsole();
                     break;
                 case "2":
-                    SetKeyConsole();
+                    key = SetKeyConsole();
+                    if (key != null)
+                    {
+                        _protocolOptions.AESProtocolState.Key = key;
+                        _protocolOptions.AESProtocolState.Enabled = true;
+                    }
                     break;
                 case "3":
                     _protocolOptions.AESProtocolState.Key = null;
                     _protocolOptions.AESProtocolState.Enabled = false;
                     break;
+                case "4":
+                    return;
+                    // break;
             }
         }
 
@@ -336,8 +399,10 @@ namespace SocketApp
             }
         }
 
-        private void SetKeyConsole()
+        // read key from file
+        private static byte[] SetKeyConsole()
         {
+            byte[] key = null;
             string input;
             Console.WriteLine("Path to key of AES? (leave blank for \"./Aes.key\")");
             Console.Write("> ");
@@ -346,13 +411,13 @@ namespace SocketApp
                 input = "./Aes.key";
             try
             {
-                _protocolOptions.AESProtocolState.Key = File.ReadAllBytes(input);
-                _protocolOptions.AESProtocolState.Enabled = true;
+                key = File.ReadAllBytes(input);
             }
             catch (FileNotFoundException)
             {
                 Console.WriteLine("[Error] File not found.");
             }
+            return key;
         }
 
         private void ProtocolConsole()
@@ -373,7 +438,7 @@ namespace SocketApp
         {
             Console.WriteLine("[Please select]");
             int index = 0;
-            foreach (Protocol.ProtocolStackType type in (Protocol.ProtocolStackType[]) Enum.GetValues(typeof(Protocol.ProtocolStackType)))
+            foreach (Protocol.ProtocolStackType type in (Protocol.ProtocolStackType[])Enum.GetValues(typeof(Protocol.ProtocolStackType)))
             {
                 Console.WriteLine($"{index}. {type.ToString()}");
                 ++index;

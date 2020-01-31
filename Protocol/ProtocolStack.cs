@@ -6,7 +6,7 @@ namespace SocketApp.Protocol
     public class ProtocolStackState
     {
         public List<IProtocol> MiddleProtocols = new List<IProtocol>();  // from high to low layer
-        public DataProtocolType Type = DataProtocolType.Undefined;
+        public DataProtocolType Type = DataProtocolType.Undefined;  // deprecated
 
         public void LinkMiddleProtocols()
         {

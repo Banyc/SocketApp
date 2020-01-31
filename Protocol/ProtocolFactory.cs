@@ -71,8 +71,7 @@ namespace SocketApp.Protocol
             state.MiddleProtocols.Add(new UTF8Protocol());
             // AES
             AESProtocol aesP = new AESProtocol();
-            AESProtocolState aesState = new AESProtocolState();
-            aesP.SetState(_options.AESProtocolState);
+            aesP.SetState(_options.AESProtocolState.Clone());
             state.MiddleProtocols.Add(aesP);
 
             state.Type = DataProtocolType.Text;
@@ -90,7 +89,7 @@ namespace SocketApp.Protocol
             // Config for UTF8 layer
 
             // Config for AES layer
-            broadcaseState.AesState = _options.AESProtocolState;
+            broadcaseState.AesState = _options.AESProtocolState.Clone();
             broadcaseState.SockController = _sockController;
             broadcaseState.SockMgr = _sockMgr;
             // add to stack

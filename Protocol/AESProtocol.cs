@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
@@ -15,6 +14,19 @@ namespace SocketApp.Protocol
         public PaddingMode Padding = PaddingMode.PKCS7;  // only tested this padding
         public byte[] Key;
         public bool Enabled = false;
+
+        public AESProtocolState Clone()
+        {
+            AESProtocolState state = new AESProtocolState();
+            state.Mode = this.Mode;
+            state.KeySize = this.KeySize;
+            state.BlockSize = this.BlockSize;
+            state.FeedbackSize = this.FeedbackSize;
+            state.Padding = this.Padding;
+            state.Key = (byte[]) this.Key?.Clone();
+            state.Enabled = this.Enabled;
+            return state;
+        }
     }
 
     public class AESProtocol : IProtocol
@@ -26,7 +38,6 @@ namespace SocketApp.Protocol
         // first, by SetState()
         // second, by DataContent (TODO)
         private AESProtocolState _state;
-
         private Aes _aesAlg = Aes.Create();
 
         public void FromHighLayerToHere(DataContent dataContent)
