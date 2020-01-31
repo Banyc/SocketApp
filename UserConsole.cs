@@ -388,7 +388,7 @@ namespace SocketApp
         static void KeyGenConsole()
         {
             Console.WriteLine("Which?");
-            Console.WriteLine("1. RSA");
+            // Console.WriteLine("1. RSA");
             Console.WriteLine("2. AES");
             Console.Write("> ");
             string input = Console.ReadLine();
