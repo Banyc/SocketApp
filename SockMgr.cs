@@ -50,11 +50,11 @@ namespace SocketApp
         Responser _responser;
         SockController _sockController;
         Protocol.ProtocolStack _protocolStack;
-        Protocol.ProtocolFactory _protocolFactory;
+        Protocol.IProtocolFactory _protocolFactory;
         SockBase _sockBase;
         public bool IsShutdown = false;
 
-        public SockMgr(SockBase sockBase, SockController sockController, Protocol.ProtocolFactoryOptions protocolOptions)
+        public SockMgr(SockBase sockBase, SockController sockController, Protocol.IProtocolFactory protocolFactory)
         {
             _sockBase = sockBase;
             _sockBase.SocketAcceptEvent += OnSocketAccept;
@@ -62,9 +62,11 @@ namespace SocketApp
             _sockBase.SocketReceiveEvent += OnSocketReceive;
             _sockBase.SocketShutdownBeginEvent += OnSocketShutdownBegin;
             _sockController = sockController;
-            
-            _protocolFactory = new Protocol.ProtocolFactory(_sockController, this, protocolOptions);
-            _protocolStack = _protocolFactory.GetProtocolStack();
+
+            protocolFactory.SetSockMgr(this);  // TODO: review
+            _protocolFactory = protocolFactory;
+
+            _protocolStack = protocolFactory.GetProtocolStack();
 
             Responser responser = new Responser(_sockController, _protocolStack, this);
             _responser = responser;
@@ -74,7 +76,7 @@ namespace SocketApp
         {
             // Notice: all clients derived from the same listener share the same factory,
             //  which means the modification on the shared factory will affect factory in other clients
-            SockMgr client = new SockMgr(e.Handler, _sockController, _protocolFactory.GetOptions());
+            SockMgr client = new SockMgr(e.Handler, _sockController, _protocolFactory.Clone());
             SockMgrAcceptEventArgs arg = new SockMgrAcceptEventArgs(client);
             SockMgrAcceptEvent?.Invoke(this, arg);
             _responser.OnSockMgrAccept(this, arg);

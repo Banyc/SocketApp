@@ -1,40 +1,47 @@
 namespace SocketApp.Protocol
 {
-    public class ProtocolFactoryOptions
+    public class DefaultProtocolFactoryOptions
     {
+        public SockController SockController;
+        public SockMgr SockMgr;
         public bool EnableRsa = false;
         public byte[] RsaPriKey;
         public byte[] RsaPubKey;
         public ProtocolStackType StackTypeOfChoice = ProtocolStackType.Default;
         public AESProtocolState AESProtocolState = new AESProtocolState();
-        // TODO: add customized sub factory for customized protocol stack
-        public bool IsCustom = false;  // if true, the Factory below will be used
-        public IProtocolFactory Factory = null;
+
+        public DefaultProtocolFactoryOptions Clone()
+        {
+            DefaultProtocolFactoryOptions options = new DefaultProtocolFactoryOptions();
+            options.EnableRsa = this.EnableRsa;
+            options.RsaPriKey = (byte[])this.RsaPriKey?.Clone();
+            options.RsaPubKey = (byte[])this.RsaPubKey?.Clone();
+            options.StackTypeOfChoice = this.StackTypeOfChoice;  // test
+            options.AESProtocolState = this.AESProtocolState.Clone();
+            options.SockController = this.SockController;
+            options.SockMgr = this.SockMgr;
+            return options;
+        }
     }
 
-    public class ProtocolFactory
+    // to make it a static class?
+    public class DefaultProtocolFactory : IProtocolFactory
     {
-        private SockController _sockController;
-        private SockMgr _sockMgr;
-        private ProtocolFactoryOptions _options = new ProtocolFactoryOptions();
-        public ProtocolFactory(SockController sockController, SockMgr sockMgr, ProtocolFactoryOptions options)
+        private DefaultProtocolFactoryOptions _options = new DefaultProtocolFactoryOptions();
+        public DefaultProtocolFactory(DefaultProtocolFactoryOptions options)
         {
-            _sockController = sockController;
-            _sockMgr = sockMgr;
             _options = options;
         }
-        public ProtocolFactory(SockController sockController, SockMgr sockMgr)
+        public DefaultProtocolFactory()
         {
-            _sockController = sockController;
-            _sockMgr = sockMgr;
         }
 
-        public void SetOptions(ProtocolFactoryOptions options)
+        public void SetOptions(DefaultProtocolFactoryOptions options)
         {
             _options = options;
         }
 
-        public ProtocolFactoryOptions GetOptions()
+        public DefaultProtocolFactoryOptions GetOptions()
         {
             return _options;
         }
@@ -42,11 +49,6 @@ namespace SocketApp.Protocol
         public ProtocolStack GetProtocolStack()
         {
             ProtocolStack ProtocolStack;
-
-            if (_options.IsCustom)
-            {
-                return _options.Factory.GetProtocolStack();
-            }
 
             switch (_options.StackTypeOfChoice)
             {
@@ -90,8 +92,8 @@ namespace SocketApp.Protocol
 
             // Config for AES layer
             broadcaseState.AesState = _options.AESProtocolState.Clone();
-            broadcaseState.SockController = _sockController;
-            broadcaseState.SockMgr = _sockMgr;
+            broadcaseState.SockController = _options.SockController;
+            broadcaseState.SockMgr = _options.SockMgr;
             // add to stack
             state.MiddleProtocols.Add(new BroadcastProtocol(broadcaseState));
 
@@ -99,6 +101,17 @@ namespace SocketApp.Protocol
             ProtocolStack protocolStack = new ProtocolStack();
             protocolStack.SetState(state);
             return protocolStack;
+        }
+
+        public IProtocolFactory Clone()
+        {
+            DefaultProtocolFactory factory = new DefaultProtocolFactory(_options.Clone());
+            return factory;
+        }
+
+        public void SetSockMgr(SockMgr sockMgr)
+        {
+            _options.SockMgr = sockMgr;
         }
     }
 }

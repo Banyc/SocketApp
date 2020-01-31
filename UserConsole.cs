@@ -9,11 +9,12 @@ namespace SocketApp
     public class UserConsole
     {
         SockController _sockController;
-        Protocol.ProtocolFactoryOptions _protocolOptions = new Protocol.ProtocolFactoryOptions();
+        Protocol.DefaultProtocolFactoryOptions _protocolOptions = new Protocol.DefaultProtocolFactoryOptions();
 
         public UserConsole(SockController sockController)
         {
             _sockController = sockController;
+            _protocolOptions.SockController = sockController;
         }
 
         public void ConsoleEntry(string[] args)
@@ -154,7 +155,7 @@ namespace SocketApp
                 localPort = int.Parse(localPortStr);
             options.ListenerIpAddress = IPAddress.Parse(localIpAddr);
             options.ListenerPort = localPort;
-            options.ProtocolOptions = _protocolOptions;
+            options.ProtocolFactory = new Protocol.DefaultProtocolFactory(_protocolOptions);
             // begin to build
             switch (sel)
             {
@@ -227,7 +228,7 @@ namespace SocketApp
                 }
             }
             options.TimesToTry = timesToTry;
-            options.ProtocolOptions = _protocolOptions;
+            options.ProtocolFactory = new Protocol.DefaultProtocolFactory(_protocolOptions);
 
             // begin to build
             _sockController.BeginBuildTcp(options, SocketRole.Client);
