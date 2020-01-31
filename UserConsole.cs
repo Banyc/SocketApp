@@ -102,7 +102,14 @@ namespace SocketApp
             foreach (var sockMgr in _sockController.GetSockList().Clients)
             {
                 Console.Write(string.Format("{0}\t", i));
-                Console.Write(string.Format("{0}\t", sockMgr.GetSockBase().IsHost.ToString()));  // if it is a host
+                if (sockMgr.GetSockBase().IsHost)
+                {
+                    Console.Write(string.Format("Host\t"));
+                }
+                else
+                {
+                    Console.Write(string.Format("    \t"));
+                }
                 Console.WriteLine(string.Format("{0}\t->\t{1}",
                     sockMgr.GetSockBase().GetSocket().LocalEndPoint.ToString(),
                     sockMgr.GetSockBase().GetSocket().RemoteEndPoint.ToString()));
