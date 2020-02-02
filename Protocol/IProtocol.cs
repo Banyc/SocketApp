@@ -1,5 +1,3 @@
-using System;
-
 namespace SocketApp.Protocol
 {
     public delegate void NextLowLayerEventHandler(DataContent dataContent);

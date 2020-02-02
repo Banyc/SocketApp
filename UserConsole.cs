@@ -170,6 +170,12 @@ namespace SocketApp
             }
         }
 
+        private void CallbackTest(object sender, SockMgrConnectEventArgs e)
+        {
+            // Console.WriteLine("[Test] Callback called");
+            // Console.WriteLine((int)e.ExternalCallbackState);
+        }
+
         void BuildClientConsole()
         {
             SockFactoryOptions options = new SockFactoryOptions();
@@ -231,7 +237,7 @@ namespace SocketApp
             options.ProtocolFactory = new Protocol.DefaultProtocolFactory(_protocolOptions);
 
             // begin to build
-            _sockController.BeginBuildTcp(options, SocketRole.Client);
+            _sockController.BeginBuildTcp(options, SocketRole.Client, CallbackTest, null, 1);
         }
 
         static void InterfaceMenu(SockMgr sockMgr)

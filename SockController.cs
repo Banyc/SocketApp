@@ -12,16 +12,11 @@ namespace SocketApp
     // mother of all sockets under one process
     public class SockController
     {
-        public delegate void SockMgrAcceptEventHandler(object sender, SockMgrAcceptEventArgs e);
-        public event SockMgrAcceptEventHandler SockMgrAcceptEvent;
-        public delegate void SockMgrConnectEventHandler(object sender, SockMgrConnectEventArgs e);
-        public event SockMgrConnectEventHandler SockMgrConnectEvent;
-        public delegate void SockMgrShutdownBeginEventHandler(object sender, SockMgrShutdownBeginEventArgs e);
-        public event SockMgrShutdownBeginEventHandler SockMgrShutdownBeginEvent;
-        public delegate void SockMgrReceiveEventHandler(object sender, SockMgrReceiveEventArgs e);
-        public event SockMgrReceiveEventHandler SockMgrReceiveEvent;  // when the data is still in raw byte[] form  // if extract data from BufferMgr, the later part could not receive it
-        public delegate void SockMgrProtocolTopEventHandler(object sender, SockMgrProtocolTopEventArgs e);
-        public event SockMgrProtocolTopEventHandler SockMgrProtocolTopEvent;  // access processed data here
+        public event SockMgr.SockMgrAcceptEventHandler SockMgrAcceptEvent;
+        public event SockMgr.SockMgrConnectEventHandler SockMgrConnectEvent;
+        public event SockMgr.SockMgrShutdownBeginEventHandler SockMgrShutdownBeginEvent;
+        public event SockMgr.SockMgrReceiveEventHandler SockMgrReceiveEvent;  // when the data is still in raw byte[] form  // if extract data from BufferMgr, the later part could not receive it
+        public event SockMgr.SockMgrProtocolTopEventHandler SockMgrProtocolTopEvent;  // access processed data here
         SockList _sockList { set; get; } = new SockList();
         SockFactory _sockFactory;
         Mutex _shutdownLock = new Mutex();  // eliminate race condition in `_sockList`
@@ -34,23 +29,26 @@ namespace SocketApp
             _sockFactory.SockMgrConnectEvent += OnSockMgrConnect;
         }
 
-        public void BeginBuildTcp(SockFactoryOptions options, SocketRole socketRole)
+        // return listener if possible; set callback to null if no callback is needed
+        public SockMgr BeginBuildTcp(SockFactoryOptions options, SocketRole socketRole, SockMgr.SockMgrConnectEventHandler connectCallback = null, SockMgr.SockMgrAcceptEventHandler acceptCallback = null, object callbackState = null)
         {
+            SockMgr listenerMgr = null;
             _sockFactory.SetOptions(options);
             switch (socketRole)
             {
                 case SocketRole.Client:
                     if (options.TimesToTry > 0)
                     {
-                        _sockFactory.BuildTcpClient();
+                        _sockFactory.BuildTcpClient(connectCallback, callbackState);
                     }
                     break;
                 case SocketRole.Listener:
-                    SockMgr listenerMgr = _sockFactory.GetTcpListener();
-                    _sockFactory.ServerAccept(listenerMgr);
+                    listenerMgr = _sockFactory.GetTcpListener();
+                    _sockFactory.ServerAccept(listenerMgr, acceptCallback, callbackState);
                     AddSockMgr(listenerMgr, SocketRole.Listener);
                     break;
             }
+            return listenerMgr;
         }
 
         // event handlers

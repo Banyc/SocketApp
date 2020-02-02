@@ -12,8 +12,9 @@ namespace SocketApp
 
     public class SocketAcceptEventArgs
     {
-        public SocketAcceptEventArgs(SockBase handler) { Handler = handler; }
+        public SocketAcceptEventArgs(AcceptStateObject state, SockBase handler) { State = state; Handler = handler; }
         public SockBase Handler { get; }
+        public AcceptStateObject State { get; }
     }
     public class SocketConnectEventArgs
     {
@@ -54,6 +55,15 @@ namespace SocketApp
         public IPEndPoint endPoint = null;
         public int timesToTry = 1;
         public SocketError errorType;
+        public SockBase.SocketConnectEventHandler externalCallback = null;
+        public object externalCallbackState = null;
+    }
+
+    public class AcceptStateObject
+    {
+        public Socket workSocket = null;
+        public SockBase.SocketAcceptEventHandler externalCallback = null;
+        public object externalCallbackState = null;
     }
 
     // socket base to provide basic asynchronous interface of system socket
@@ -94,33 +104,40 @@ namespace SocketApp
         }
 
         // async Accept
-        public void StartAccept()
+        public void StartAccept(SocketAcceptEventHandler externalCallback = null, object externalCallbackState = null)
         {
+            AcceptStateObject state = new AcceptStateObject();
+            state.workSocket = _socket;
+            state.externalCallback = externalCallback;
+            state.externalCallbackState = externalCallbackState;
             _socket.BeginAccept(
-                new System.AsyncCallback(AcceptCallback), _socket);
+                new System.AsyncCallback(AcceptCallback), state);
         }
         private void AcceptCallback(IAsyncResult ar)
         {
             try
             {
+                AcceptStateObject state = (AcceptStateObject) ar.AsyncState;
                 // Get the socket that handles the client request.  
-                Socket listener = (Socket)ar.AsyncState;
+                Socket listener = state.workSocket;
                 Socket handler = listener.EndAccept(ar);
 
                 SockBase sockBase = new SockBase(handler, SocketRole.Client, true);
                 sockBase.IsConnected = true;
                 sockBase.StartReceive();
 
-                SocketAcceptEvent?.Invoke(this, new SocketAcceptEventArgs(sockBase));
+                SocketAcceptEvent?.Invoke(this, new SocketAcceptEventArgs(state, sockBase));
+                if (state.externalCallback != null)
+                    state.externalCallback(this, new SocketAcceptEventArgs(state, sockBase));
 
                 listener.BeginAccept(
-                    new System.AsyncCallback(AcceptCallback), listener);
+                    new System.AsyncCallback(AcceptCallback), state);
             }
             catch (ObjectDisposedException) { }  // listener closed
         }
 
         // async Connect
-        public void StartConnect(IPEndPoint ep, int timesToTry)
+        public void StartConnect(IPEndPoint ep, int timesToTry, SocketConnectEventHandler externalCallback = null, object externalCallbackState = null)
         {
             if (this.IsConnected == true)
                 return;
@@ -128,6 +145,8 @@ namespace SocketApp
             state.workSocket = _socket;
             state.endPoint = ep;
             state.timesToTry = timesToTry;
+            state.externalCallback = externalCallback;
+            state.externalCallbackState = externalCallbackState;
             _socket.BeginConnect(ep,
                 new System.AsyncCallback(ConnectCallback), state);
         }
@@ -153,6 +172,8 @@ namespace SocketApp
             finally
             {
                 SocketConnectEvent?.Invoke(this, new SocketConnectEventArgs(state, this));
+                if (state.externalCallback != null)
+                    state.externalCallback(this, new SocketConnectEventArgs(state, this));
             }
         }
 

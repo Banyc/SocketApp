@@ -6,12 +6,15 @@ namespace SocketApp
     }
     public class SockMgrAcceptEventArgs : SockMgrEventArgs
     {
-        public SockMgrAcceptEventArgs(SockMgr handler) { base.Handler = handler; }
+        public SockMgrAcceptEventArgs(SockMgr handler, AcceptStateObject state, object externalCallbackState = null) { State = state; ExternalCallbackState = externalCallbackState; base.Handler = handler; }
+        public AcceptStateObject State { get; }
+        public object ExternalCallbackState  { get; }
     }
     public class SockMgrConnectEventArgs : SockMgrEventArgs
     {
-        public SockMgrConnectEventArgs(SockMgr handler, ConnectStateObject state) { State = state; base.Handler = handler; }
+        public SockMgrConnectEventArgs(SockMgr handler, ConnectStateObject state, object externalCallbackState = null) { State = state; ExternalCallbackState = externalCallbackState; base.Handler = handler; }
         public ConnectStateObject State { get; }
+        public object ExternalCallbackState  { get; }
     }
 
     public class SockMgrShutdownBeginEventArgs : SockMgrEventArgs
@@ -32,6 +35,17 @@ namespace SocketApp
         public Protocol.DataContent DataContent;
     }
 
+    public class SockMgrConnectStateObject
+    {
+        public SockMgr.SockMgrConnectEventHandler externalCallback = null;
+        public object externalCallbackState = null;
+    }
+
+    public class SockMgrAcceptStateObject
+    {
+        public SockMgr.SockMgrAcceptEventHandler externalCallback = null;
+        public object externalCallbackState = null;
+    }
 
     // a wrapper of `SockBase` and the corresponding `Responser`
     public class SockMgr
@@ -57,8 +71,6 @@ namespace SocketApp
         public SockMgr(SockBase sockBase, SockController sockController, Protocol.IProtocolFactory protocolFactory)
         {
             _sockBase = sockBase;
-            _sockBase.SocketAcceptEvent += OnSocketAccept;
-            _sockBase.SocketConnectEvent += OnSocketConnect;
             _sockBase.SocketReceiveEvent += OnSocketReceive;
             _sockBase.SocketShutdownBeginEvent += OnSocketShutdownBegin;
             _sockController = sockController;
@@ -72,21 +84,41 @@ namespace SocketApp
             _responser = responser;
         }
 
-        private void OnSocketAccept(object sender, SocketAcceptEventArgs e)
+        public void StartConnect(System.Net.IPEndPoint ep, int timesToTry, SockMgrConnectEventHandler externalCallback = null, object externalCallbackState = null)
         {
-            // Notice: all clients derived from the same listener share the same factory,
-            //  which means the modification on the shared factory will affect factory in other clients
-            SockMgr client = new SockMgr(e.Handler, _sockController, _protocolFactory.Clone());
-            SockMgrAcceptEventArgs arg = new SockMgrAcceptEventArgs(client);
-            SockMgrAcceptEvent?.Invoke(this, arg);
-            _responser.OnSockMgrAccept(this, arg);
+            SockMgrConnectStateObject state = new SockMgrConnectStateObject();
+            state.externalCallback = externalCallback;
+            state.externalCallbackState = externalCallbackState;
+            _sockBase.StartConnect(ep, timesToTry, ConnectCallback, state);
         }
-        private void OnSocketConnect(object sender, SocketConnectEventArgs e)
+        private void ConnectCallback(object sender, SocketConnectEventArgs e)
         {
-            SockMgrConnectEventArgs arg = new SockMgrConnectEventArgs(this, e.State);
+            SockMgrConnectStateObject state = (SockMgrConnectStateObject)e.State.externalCallbackState;
+            SockMgrConnectEventArgs arg = new SockMgrConnectEventArgs(this, e.State, state.externalCallbackState);
             SockMgrConnectEvent?.Invoke(this, arg);
+            if (state.externalCallback != null)
+                state.externalCallback(this, arg);
             _responser.OnSockMgrConnect(this, arg);
         }
+
+        public void StartAccept(SockMgrAcceptEventHandler externalCallback = null, object externalCallbackState = null)
+        {
+            SockMgrAcceptStateObject state = new SockMgrAcceptStateObject();
+            state.externalCallback = externalCallback;
+            state.externalCallbackState = externalCallbackState;
+            _sockBase.StartAccept(AcceptCallback, state);
+        }
+        private void AcceptCallback(object sender, SocketAcceptEventArgs e)
+        {
+            SockMgrAcceptStateObject state = (SockMgrAcceptStateObject)e.State.externalCallbackState;
+            SockMgr client = new SockMgr(e.Handler, _sockController, _protocolFactory.Clone());
+            SockMgrAcceptEventArgs arg = new SockMgrAcceptEventArgs(client, e.State, state.externalCallbackState);
+            SockMgrAcceptEvent?.Invoke(this, arg);
+            if (state.externalCallback != null)
+                state.externalCallback(this, arg);
+            _responser.OnSockMgrAccept(this, arg);
+        }
+
         private void OnSocketShutdownBegin(object sender, SocketShutdownBeginEventArgs e)
         {
             this.IsShutdown = true;
@@ -119,13 +151,14 @@ namespace SocketApp
             return _sockBase;
         }
 
-        public void SendText(string data)  // TODO: test
+        public void SendText(string data)
         {
             Protocol.DataContent dataContent = new Protocol.DataContent();
             dataContent.Type = Protocol.DataProtocolType.Text;
             dataContent.Data = data;
             _protocolStack.FromHighLayerToHere(dataContent);
         }
+        // dataContent has been processed and delivered to the topest layer of Application
         public void RaiseSockMgrProtocolTopEvent(Protocol.DataContent dataContent)
         {
             SockMgrProtocolTopEvent?.Invoke(this, new SockMgrProtocolTopEventArgs(this, dataContent));

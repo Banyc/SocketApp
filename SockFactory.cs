@@ -54,10 +54,10 @@ namespace SocketApp
         }
 
         // start accepting
-        public void ServerAccept(SockMgr listener)
+        public void ServerAccept(SockMgr listener, SockMgr.SockMgrAcceptEventHandler acceptCallback = null, object callbackState = null)
         {
             listener.SockMgrAcceptEvent += OnSocketAccept;
-            listener.GetSockBase().StartAccept();
+            listener.StartAccept(acceptCallback, callbackState);
         }
         // return
         private void OnSocketAccept(object sender, SockMgrAcceptEventArgs e)
@@ -65,7 +65,7 @@ namespace SocketApp
             SockMgrAcceptEvent?.Invoke(sender, e);
         }
 
-        public void BuildTcpClient()
+        public void BuildTcpClient(SockMgr.SockMgrConnectEventHandler connectCallback, object callbackState = null)
         {
             Socket sock = new Socket(_options.ListenerIpAddress.AddressFamily,
                 SocketType.Stream, ProtocolType.Tcp);
@@ -77,7 +77,7 @@ namespace SocketApp
             SockMgr sockMgr = new SockMgr(sockBase, _sockController, _options.ProtocolFactory.Clone());
 
             sockMgr.SockMgrConnectEvent += OnSocketConnect;
-            sockMgr.GetSockBase().StartConnect(new IPEndPoint(_options.ListenerIpAddress, _options.ListenerPort), _options.TimesToTry);
+            sockMgr.StartConnect(new IPEndPoint(_options.ListenerIpAddress, _options.ListenerPort), _options.TimesToTry, connectCallback, callbackState);
         }
         // return
         private void OnSocketConnect(object sender, SockMgrConnectEventArgs e)
