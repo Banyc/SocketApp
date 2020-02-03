@@ -71,6 +71,8 @@ namespace SocketApp.Protocol
 
             // UTF8
             state.MiddleProtocols.Add(new UTF8Protocol());
+            // Seq
+            state.MiddleProtocols.Add(new SequenceProtocol());
             // AES
             AESProtocol aesP = new AESProtocol();
             aesP.SetState(_options.AESProtocolState.Clone());
