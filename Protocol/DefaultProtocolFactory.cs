@@ -75,7 +75,11 @@ namespace SocketApp.Protocol
             ProtocolStackState state = new ProtocolStackState();
 
             // File Branch
-            // TODO
+            ProtocolStackState fileBranchState = new ProtocolStackState();
+            fileBranchState.MiddleProtocols.Add(new SmallFileProtocol());  // SmallFileProtocol
+            ProtocolStack fileBranch = new ProtocolStack();
+            fileBranch.SetState(fileBranchState);
+            fileBranchState.Type = DataProtocolType.SmallFile;
 
             // Text Branch
             ProtocolStackState textBranchState = new ProtocolStackState();
@@ -86,7 +90,8 @@ namespace SocketApp.Protocol
 
             // branching
             List<ProtocolStack> branches = new List<ProtocolStack>();
-            branches.Add(textBranch);
+            branches.Add(textBranch);  // index 0
+            branches.Add(fileBranch);  // index 1
             TypeBranchingProtocol branchingProtocol = new TypeBranchingProtocol();
             branchingProtocol.SetBranches(branches);
             state.MiddleProtocols.Add(branchingProtocol);

@@ -1,3 +1,4 @@
+using System.IO;
 using System;
 using SocketApp.Protocol;
 
@@ -43,6 +44,15 @@ namespace SocketApp
             {
                 case Protocol.DataProtocolType.Text:
                     Console.WriteLine((string)dataContent.Data);
+                    Console.WriteLine(string.Format("[MessageEnd]"));
+                    Console.Write("> ");
+                    break;
+                case Protocol.DataProtocolType.SmallFile:
+                    Protocol.SmallFileDataObject dataObject = (Protocol.SmallFileDataObject)dataContent.Data;
+                    Console.WriteLine($"Saving File \"{dataObject.Filename}\" to \"./recvFiles\" ...");
+                    Directory.CreateDirectory("./recvFiles");
+                    File.WriteAllBytes(Path.Combine("./recvFiles", dataObject.Filename), dataObject.BinData);
+                    Console.WriteLine($"File \"{dataObject.Filename}\" saved");
                     Console.WriteLine(string.Format("[MessageEnd]"));
                     Console.Write("> ");
                     break;
@@ -129,7 +139,6 @@ namespace SocketApp
                     sockMgr.GetSockBase().GetSocket().RemoteEndPoint.ToString(),
                     sockMgr.GetSockBase().GetSocket().LocalEndPoint.ToString(),
                     DateTime.Now.ToString()));
-                dataContent.Type = DataProtocolType.Text;
                 sockMgr.GetProtocolStack().FromLowLayerToHere(dataContent);
 
                 data = bufferMgr.GetAdequateBytes();

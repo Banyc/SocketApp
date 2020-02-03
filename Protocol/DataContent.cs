@@ -5,7 +5,7 @@ namespace SocketApp.Protocol
     {
         Undefined,
         Text,
-        File,
+        SmallFile,
     }
     
     public class DataContent : ICloneable  // passing through all layers of protocols/middlewares

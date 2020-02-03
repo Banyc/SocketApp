@@ -42,7 +42,7 @@ namespace SocketApp
         public Socket workSocket = null;
         public SockBase Source = null;  // caller
         // Size of receive buffer.  
-        public const int BufferSize = 65535;
+        public const int BufferSize = 1 * 1024 * 1024;
         // Receive buffer.  
         public byte[] buffer = new byte[BufferSize];
         // buffer manager
@@ -100,6 +100,7 @@ namespace SocketApp
             int length = data.Length;
             byte[] lengthByte = BitConverter.GetBytes(length);  // 4 Bytes
             _socket.Send(lengthByte);  // send prefix
+            // TODO: replace it with BeginSend()
             _socket.Send(data);  // send data
         }
 

@@ -158,11 +158,11 @@ namespace SocketApp
             dataContent.Data = data;
             _protocolStack.FromHighLayerToHere(dataContent);
         }
-        public void SendFile(byte[] data)
+        public void SendSmallFile(Protocol.SmallFileDataObject dataObject)
         {
             Protocol.DataContent dataContent = new Protocol.DataContent();
-            dataContent.Type = Protocol.DataProtocolType.File;
-            dataContent.Data = data;
+            dataContent.Type = Protocol.DataProtocolType.SmallFile;
+            dataContent.Data = dataObject;
             _protocolStack.FromHighLayerToHere(dataContent);
         }
         

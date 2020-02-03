@@ -253,11 +253,12 @@ namespace SocketApp
                 Console.WriteLine(string.Format("[Interface Menu] {0} -> {1}",
                     sockMgr.GetSockBase().GetSocket().LocalEndPoint.ToString(),
                     sockMgr.GetSockBase().GetSocket().RemoteEndPoint.ToString()));
-                Console.WriteLine("1. Send");
+                Console.WriteLine("1. Send Text");
                 Console.WriteLine("2. Close");
                 Console.WriteLine("3. Is Host?");
                 Console.WriteLine("4. Exit");
                 Console.WriteLine("5. Config AES");
+                Console.WriteLine("6. Send Small File");
                 foreach (var proto in sockMgr.GetProtocolStack().GetState().MiddleProtocols)
                 {
                     if (proto.GetType() == typeof(Protocol.AESProtocol) && ((Protocol.AESProtocol)proto).GetState().Enabled == false)
@@ -273,7 +274,7 @@ namespace SocketApp
                     switch (sel)
                     {
                         case "1":
-                            SendConsole(sockMgr);
+                            SendTextConsole(sockMgr);
                             break;
                         case "2":
                             sockMgr.Shutdown();
@@ -286,6 +287,9 @@ namespace SocketApp
                             break;
                         case "5":
                             InterfaceAesConsole(sockMgr);
+                            break;
+                        case "6":
+                            SendSmallFileConsole(sockMgr);
                             break;
                         default:
                             break;
@@ -364,12 +368,33 @@ namespace SocketApp
             }
         }
 
-        static void SendConsole(SockMgr sockMgr)
+        static void SendTextConsole(SockMgr sockMgr)
         {
             Console.WriteLine("Enter message to send");
             Console.Write("> ");
             string msg = Console.ReadLine();
             sockMgr.SendText(msg);
+        }
+
+        static void SendSmallFileConsole(SockMgr sockMgr)
+        {
+            Console.WriteLine("Enter filepath to send");
+            Console.Write("> ");
+            string filepath = Console.ReadLine();
+            Protocol.SmallFileDataObject dataObject = new Protocol.SmallFileDataObject();
+            dataObject.Filename = Path.GetFileName(filepath);
+            Console.WriteLine("Reading File");
+            try
+            {
+                dataObject.BinData = File.ReadAllBytes(filepath);
+            }
+            catch (FileNotFoundException)
+            {
+                Console.WriteLine("[Error] File Not Found");
+                return;
+            }
+            Console.WriteLine("Sending File");
+            sockMgr.SendSmallFile(dataObject);
         }
 
         void CryptoConsole()
@@ -391,7 +416,7 @@ namespace SocketApp
                         KeyGenConsole();
                         break;
                     case "2":
-                        key = SetKeyConsole("./Aes.-1.key");
+                        key = SetKeyConsole("./AES.-1.key");
                         if (key != null)
                         {
                             _protocolOptions.FirstLowAESProtocolState.Key = key;
@@ -408,7 +433,7 @@ namespace SocketApp
                         return;
                     // break;
                     case "5":
-                        key = SetKeyConsole("./Aes.-2.key");
+                        key = SetKeyConsole("./AES.-2.key");
                         if (key != null)
                         {
                             _protocolOptions.SecondLowAESProtocolState.Key = key;
@@ -443,7 +468,7 @@ namespace SocketApp
         }
 
         // read key from file
-        private static byte[] SetKeyConsole(string defaultPath = "./Aes.key")
+        private static byte[] SetKeyConsole(string defaultPath = "./AES.key")
         {
             byte[] key = null;
             string input;
