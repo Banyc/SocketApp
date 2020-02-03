@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
@@ -5,7 +6,7 @@ using System.Security.Cryptography;
 
 namespace SocketApp.Protocol
 {
-    public class AESProtocolState
+    public class AESProtocolState : ICloneable
     {
         public CipherMode Mode = CipherMode.CBC;
         public int KeySize = 128;
@@ -15,7 +16,7 @@ namespace SocketApp.Protocol
         public byte[] Key;
         public bool Enabled = false;
 
-        public AESProtocolState Clone()
+        public object Clone()
         {
             AESProtocolState state = new AESProtocolState();
             state.Mode = this.Mode;
@@ -63,6 +64,7 @@ namespace SocketApp.Protocol
                 catch (CryptographicException)
                 {
                     dataContent.IsAesError = true;
+                    return;  // discard this message
                 }
             }
             NextHighLayerEvent?.Invoke(dataContent);

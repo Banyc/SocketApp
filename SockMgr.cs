@@ -111,7 +111,7 @@ namespace SocketApp
         private void AcceptCallback(object sender, SocketAcceptEventArgs e)
         {
             SockMgrAcceptStateObject state = (SockMgrAcceptStateObject)e.State.externalCallbackState;
-            SockMgr client = new SockMgr(e.Handler, _sockController, _protocolFactory.Clone());
+            SockMgr client = new SockMgr(e.Handler, _sockController, (Protocol.IProtocolFactory)_protocolFactory.Clone());
             SockMgrAcceptEventArgs arg = new SockMgrAcceptEventArgs(client, e.State, state.externalCallbackState);
             SockMgrAcceptEvent?.Invoke(this, arg);
             if (state.externalCallback != null)

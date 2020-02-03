@@ -2,6 +2,7 @@ using System.Net;
 using System.IO;
 using System.Net.Sockets;
 using System;
+using System.Collections.Generic;
 
 namespace SocketApp
 {
@@ -39,9 +40,13 @@ namespace SocketApp
                 Console.WriteLine("8. Exit");
                 Console.WriteLine("9. Crypto Console");
                 Console.WriteLine("10. Manage protocols");
-                if (!_protocolOptions.AESProtocolState.Enabled)
+                if (!_protocolOptions.SecondLowAESProtocolState.Enabled)
                 {
-                    Console.WriteLine("[Warning] AES is not enabled");
+                    Console.WriteLine("[Warning] Second lowest AES is not enabled");
+                }
+                if (!_protocolOptions.FirstLowAESProtocolState.Enabled)
+                {
+                    Console.WriteLine("[Warning] First lowest AES is not enabled");
                 }
 
                 Console.Write("> ");
@@ -256,7 +261,7 @@ namespace SocketApp
                 foreach (var proto in sockMgr.GetProtocolStack().GetState().MiddleProtocols)
                 {
                     if (proto.GetType() == typeof(Protocol.AESProtocol) && ((Protocol.AESProtocol)proto).GetState().Enabled == false)
-                        Console.WriteLine("[Warning] AES is not enabled");
+                        Console.WriteLine("[Warning] There exists an AES layer that is not enabled");
                 }
 
                 Console.Write("> ");
@@ -293,27 +298,35 @@ namespace SocketApp
         static void InterfaceAesConsole(SockMgr sockMgr)
         {
             byte[] key;
+            string input;
             Protocol.AESProtocolState state;
-            Protocol.AESProtocol aesProto = null;
+            List<Protocol.AESProtocol> aesProtocols = new List<Protocol.AESProtocol>();
+            int i = 0;
             foreach (var proto in sockMgr.GetProtocolStack().GetState().MiddleProtocols)
             {
                 if (proto.GetType() == typeof(Protocol.AESProtocol))
                 {
-                    aesProto = (Protocol.AESProtocol)proto;
-                    break;
+                    aesProtocols.Add((Protocol.AESProtocol)proto);
+                    Console.WriteLine($"{i}\t{proto.ToString()}");
+                    ++i;
                 }
             }
-            if (aesProto == null)
+            if (aesProtocols.Count == 0)
                 return;
 
-            state = aesProto.GetState();
+            Console.WriteLine("[Interface-AES] Select one by index");
+            Console.Write("> ");
+            input = Console.ReadLine();
+            int index = int.Parse(input);
 
-            Console.WriteLine("[Interface-AES] (only for the first AES searched from Top)");
+            state = aesProtocols[index].GetState();
+
+            Console.WriteLine("[Interface-AES]");
             Console.WriteLine("1. Set Key");
             Console.WriteLine("2. Disable Key");
             Console.WriteLine("3. Exit");
             Console.Write("> ");
-            string input = Console.ReadLine();
+            input = Console.ReadLine();
             switch (input)
             {
                 case "1":
@@ -322,12 +335,12 @@ namespace SocketApp
                     {
                         state.Key = key;
                         state.Enabled = true;
-                        aesProto.SetState(state);
+                        aesProtocols[index].SetState(state);
                     }
                     break;
                 case "2":
                     state.Enabled = false;
-                    aesProto.SetState(state);
+                    aesProtocols[index].SetState(state);
                     break;
                 case "3":
                     return;
@@ -361,34 +374,48 @@ namespace SocketApp
 
         void CryptoConsole()
         {
-            byte[] key;
-            Console.WriteLine("[Crypto Console]");
-            Console.WriteLine("1. Create Keys");
-            Console.WriteLine("2. Set Keys");
-            Console.WriteLine("3. Clean Keys");
-            Console.WriteLine("4. Exit");
-            Console.Write("> ");
-            string input = Console.ReadLine();
-            switch (input)
+            while (true)
             {
-                case "1":
-                    KeyGenConsole();
-                    break;
-                case "2":
-                    key = SetKeyConsole();
-                    if (key != null)
-                    {
-                        _protocolOptions.AESProtocolState.Key = key;
-                        _protocolOptions.AESProtocolState.Enabled = true;
-                    }
-                    break;
-                case "3":
-                    _protocolOptions.AESProtocolState.Key = null;
-                    _protocolOptions.AESProtocolState.Enabled = false;
-                    break;
-                case "4":
-                    return;
+                byte[] key;
+                Console.WriteLine("[Crypto Console]");
+                Console.WriteLine("1. Create Keys");
+                Console.WriteLine("2. Set First Lowest Key");
+                Console.WriteLine("3. Clean Keys");
+                Console.WriteLine("4. Exit");
+                Console.WriteLine("5. Set Second Lowest Key");
+                Console.Write("> ");
+                string input = Console.ReadLine();
+                switch (input)
+                {
+                    case "1":
+                        KeyGenConsole();
+                        break;
+                    case "2":
+                        key = SetKeyConsole("./Aes.-1.key");
+                        if (key != null)
+                        {
+                            _protocolOptions.FirstLowAESProtocolState.Key = key;
+                            _protocolOptions.FirstLowAESProtocolState.Enabled = true;
+                        }
+                        break;
+                    case "3":
+                        _protocolOptions.FirstLowAESProtocolState.Key = null;
+                        _protocolOptions.FirstLowAESProtocolState.Enabled = false;
+                        _protocolOptions.SecondLowAESProtocolState.Key = null;
+                        _protocolOptions.SecondLowAESProtocolState.Enabled = false;
+                        break;
+                    case "4":
+                        return;
                     // break;
+                    case "5":
+                        key = SetKeyConsole("./Aes.-2.key");
+                        if (key != null)
+                        {
+                            _protocolOptions.SecondLowAESProtocolState.Key = key;
+                            _protocolOptions.SecondLowAESProtocolState.Enabled = true;
+                        }
+                        break;
+                }
             }
         }
 
@@ -408,21 +435,23 @@ namespace SocketApp
                     System.Security.Cryptography.Aes aesAlg = System.Security.Cryptography.Aes.Create();
                     aesAlg.GenerateKey();
                     byte[] key = aesAlg.Key;
-                    File.WriteAllBytes("./AES.key", key);
+                    File.WriteAllBytes("./AES.-2.key", key);
+                    aesAlg.GenerateKey();
+                    File.WriteAllBytes("./AES.-1.key", aesAlg.Key);
                     break;
             }
         }
 
         // read key from file
-        private static byte[] SetKeyConsole()
+        private static byte[] SetKeyConsole(string defaultPath = "./Aes.key")
         {
             byte[] key = null;
             string input;
-            Console.WriteLine("Path to key of AES? (leave blank for \"./Aes.key\")");
+            Console.WriteLine($"Path to key of AES? (leave blank for \"{defaultPath}\")");
             Console.Write("> ");
             input = Console.ReadLine();
             if (input == "")
-                input = "./Aes.key";
+                input = defaultPath;
             try
             {
                 key = File.ReadAllBytes(input);

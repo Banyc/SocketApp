@@ -28,6 +28,8 @@ namespace SocketApp.Protocol
             body = ((byte[])dataContent.Data).Skip(4).ToArray();
             int typeIndex = BitConverter.ToInt32(typeHeader);
             dataContent.Data = body;
+            if (typeIndex > (int)DataProtocolType.File || typeIndex < (int)DataProtocolType.Undefined)
+                return;  // discard if out of range
             dataContent.Type = (DataProtocolType)typeIndex;
             NextHighLayerEvent?.Invoke(dataContent);
         }

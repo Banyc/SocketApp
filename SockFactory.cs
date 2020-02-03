@@ -45,7 +45,7 @@ namespace SocketApp
             listener.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
 
             SockBase sockBase = new SockBase(listener, SocketRole.Listener, true);
-            SockMgr sockMgr = new SockMgr(sockBase, _sockController, _options.ProtocolFactory.Clone());
+            SockMgr sockMgr = new SockMgr(sockBase, _sockController, (IProtocolFactory)_options.ProtocolFactory.Clone());
 
             listener.Bind(localEndPoint);
             listener.Listen(4);
@@ -74,7 +74,7 @@ namespace SocketApp
                 sock.Bind(new IPEndPoint(IPAddress.Any, _options.ClientPort));
 
             SockBase sockBase = new SockBase(sock, SocketRole.Client, false);
-            SockMgr sockMgr = new SockMgr(sockBase, _sockController, _options.ProtocolFactory.Clone());
+            SockMgr sockMgr = new SockMgr(sockBase, _sockController, (IProtocolFactory)_options.ProtocolFactory.Clone());
 
             sockMgr.SockMgrConnectEvent += OnSocketConnect;
             sockMgr.StartConnect(new IPEndPoint(_options.ListenerIpAddress, _options.ListenerPort), _options.TimesToTry, connectCallback, callbackState);
@@ -95,7 +95,7 @@ namespace SocketApp
             listener.Bind(new IPEndPoint(_options.ListenerIpAddress, _options.ListenerPort));
 
             SockBase sockBase = new SockBase(listener, SocketRole.Listener, true);
-            SockMgr sockMgr = new SockMgr(sockBase, _sockController, _options.ProtocolFactory.Clone());
+            SockMgr sockMgr = new SockMgr(sockBase, _sockController, (IProtocolFactory)_options.ProtocolFactory.Clone());
 
             return sockMgr;
         }
@@ -106,7 +106,7 @@ namespace SocketApp
                 SocketType.Dgram, ProtocolType.Udp);
 
             SockBase sockBase = new SockBase(sock, SocketRole.Client, false);
-            SockMgr sockMgr = new SockMgr(sockBase, _sockController, _options.ProtocolFactory.Clone());
+            SockMgr sockMgr = new SockMgr(sockBase, _sockController, (IProtocolFactory)_options.ProtocolFactory.Clone());
 
             // TODO: use BeginConnect instead
             sock.Connect(new IPEndPoint(_options.ListenerIpAddress, _options.ListenerPort));

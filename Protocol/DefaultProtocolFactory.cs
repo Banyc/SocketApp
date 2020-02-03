@@ -1,8 +1,9 @@
+using System;
 using System.Collections.Generic;
 
 namespace SocketApp.Protocol
 {
-    public class DefaultProtocolFactoryOptions
+    public class DefaultProtocolFactoryOptions : ICloneable
     {
         public SockController SockController;
         public SockMgr SockMgr;
@@ -10,16 +11,18 @@ namespace SocketApp.Protocol
         public byte[] RsaPriKey;
         public byte[] RsaPubKey;
         public ProtocolStackType StackTypeOfChoice = ProtocolStackType.Default;
-        public AESProtocolState AESProtocolState = new AESProtocolState();
+        public AESProtocolState SecondLowAESProtocolState = new AESProtocolState();
+        public AESProtocolState FirstLowAESProtocolState = new AESProtocolState();
 
-        public DefaultProtocolFactoryOptions Clone()
+        public object Clone()
         {
             DefaultProtocolFactoryOptions options = new DefaultProtocolFactoryOptions();
             options.EnableRsa = this.EnableRsa;
             options.RsaPriKey = (byte[])this.RsaPriKey?.Clone();
             options.RsaPubKey = (byte[])this.RsaPubKey?.Clone();
             options.StackTypeOfChoice = this.StackTypeOfChoice;  // test
-            options.AESProtocolState = this.AESProtocolState.Clone();
+            options.SecondLowAESProtocolState = (AESProtocolState)this.SecondLowAESProtocolState.Clone();
+            options.FirstLowAESProtocolState = (AESProtocolState)this.FirstLowAESProtocolState.Clone();
             options.SockController = this.SockController;
             options.SockMgr = this.SockMgr;
             return options;
@@ -79,6 +82,7 @@ namespace SocketApp.Protocol
             textBranchState.MiddleProtocols.Add(new UTF8Protocol());  // UTF8
             ProtocolStack textBranch = new ProtocolStack();
             textBranch.SetState(textBranchState);
+            textBranchState.Type = DataProtocolType.Text;
 
             // branching
             List<ProtocolStack> branches = new List<ProtocolStack>();
@@ -91,43 +95,49 @@ namespace SocketApp.Protocol
             TypeTagProtocol typeTagProtocol = new TypeTagProtocol();
             state.MiddleProtocols.Add(typeTagProtocol);
 
-            // Seq
-            state.MiddleProtocols.Add(new SequenceProtocol());
             // AES
             AESProtocol aesP = new AESProtocol();
-            aesP.SetState(_options.AESProtocolState.Clone());
+            aesP.SetState((AESProtocolState)_options.SecondLowAESProtocolState.Clone());
             state.MiddleProtocols.Add(aesP);
+
+            BasicSecurityLayer(state, _options.FirstLowAESProtocolState);
 
             state.Type = DataProtocolType.Text;
             ProtocolStack protocolStack = new ProtocolStack();
             protocolStack.SetState(state);
             return protocolStack;
+        }
+
+        private static void BasicSecurityLayer(ProtocolStackState stackState, AESProtocolState aesState)
+        {
+            // Seq (this protocol will block broadcasted messages)
+            stackState.MiddleProtocols.Add(new SequenceProtocol());
+            // AES
+            AESProtocol aesP = new AESProtocol();
+            aesP.SetState((AESProtocolState)aesState.Clone());
+            stackState.MiddleProtocols.Add(aesP);
         }
 
         private ProtocolStack GetBroadcastStack()
         {
             ProtocolStackState state = new ProtocolStackState();
 
+            // broadcast protocol
             BroadcastProtocolState broadcaseState = new BroadcastProtocolState();
-
-            // Config for UTF8 layer
-
-            // Config for AES layer
-            broadcaseState.AesState = _options.AESProtocolState.Clone();
             broadcaseState.SockController = _options.SockController;
             broadcaseState.SockMgr = _options.SockMgr;
-            // add to stack
             state.MiddleProtocols.Add(new BroadcastProtocol(broadcaseState));
 
-            state.Type = DataProtocolType.Text;
+            BasicSecurityLayer(state, _options.FirstLowAESProtocolState);
+
             ProtocolStack protocolStack = new ProtocolStack();
             protocolStack.SetState(state);
             return protocolStack;
         }
 
-        public IProtocolFactory Clone()
+        public object Clone()
         {
-            DefaultProtocolFactory factory = new DefaultProtocolFactory(_options.Clone());
+            DefaultProtocolFactory factory = new DefaultProtocolFactory((DefaultProtocolFactoryOptions)_options.Clone());
             return factory;
         }
 

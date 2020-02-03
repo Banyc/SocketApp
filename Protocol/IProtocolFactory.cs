@@ -1,9 +1,9 @@
+using System;
 namespace SocketApp.Protocol
 {
-    public interface IProtocolFactory
+    public interface IProtocolFactory : ICloneable
     {
         void SetSockMgr(SockMgr sockMgr);
         ProtocolStack GetProtocolStack();
-        IProtocolFactory Clone();
     }
 }
