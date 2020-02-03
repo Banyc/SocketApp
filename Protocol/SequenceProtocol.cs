@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace SocketApp.Protocol
 {
-    // prevent repeat attack
+    // prevent replay attack
     public class SequenceProtocol : IProtocol
     {
         public event NextLowLayerEventHandler NextLowLayerEvent;

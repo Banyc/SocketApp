@@ -25,9 +25,11 @@ Reaction for some events is defined in class `Responser`. Those Events are
 - On Receiving new message (which has not been processed by the protocol stack yet)
 - On Socket is about to shutdown
 
-To Modify the protocol stack, goto `ProtocolFactory`.
+To Modify the protocol stack, goto method `GetDefaultStack` in `DefaultProtocolFactory` as an example.
 
 To build a new layer of protocol, derive your class from `IProtocol`.
+
+To register your protocols, build your own protocol factory deriving from `IProtocolFactory`, and pass it as a parameter to `BeginBuildTcp()` from class `SockController`
 
 ## TODO
 

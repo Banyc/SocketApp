@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace SocketApp.Protocol
 {
     public class DefaultProtocolFactoryOptions
@@ -69,8 +71,26 @@ namespace SocketApp.Protocol
         {
             ProtocolStackState state = new ProtocolStackState();
 
-            // UTF8
-            state.MiddleProtocols.Add(new UTF8Protocol());
+            // File Branch
+            // TODO
+
+            // Text Branch
+            ProtocolStackState textBranchState = new ProtocolStackState();
+            textBranchState.MiddleProtocols.Add(new UTF8Protocol());  // UTF8
+            ProtocolStack textBranch = new ProtocolStack();
+            textBranch.SetState(textBranchState);
+
+            // branching
+            List<ProtocolStack> branches = new List<ProtocolStack>();
+            branches.Add(textBranch);
+            TypeBranchingProtocol branchingProtocol = new TypeBranchingProtocol();
+            branchingProtocol.SetBranches(branches);
+            state.MiddleProtocols.Add(branchingProtocol);
+
+            // Type tagging
+            TypeTagProtocol typeTagProtocol = new TypeTagProtocol();
+            state.MiddleProtocols.Add(typeTagProtocol);
+
             // Seq
             state.MiddleProtocols.Add(new SequenceProtocol());
             // AES

@@ -158,6 +158,14 @@ namespace SocketApp
             dataContent.Data = data;
             _protocolStack.FromHighLayerToHere(dataContent);
         }
+        public void SendFile(byte[] data)
+        {
+            Protocol.DataContent dataContent = new Protocol.DataContent();
+            dataContent.Type = Protocol.DataProtocolType.File;
+            dataContent.Data = data;
+            _protocolStack.FromHighLayerToHere(dataContent);
+        }
+        
         // dataContent has been processed and delivered to the topest layer of Application
         public void RaiseSockMgrProtocolTopEvent(Protocol.DataContent dataContent)
         {
