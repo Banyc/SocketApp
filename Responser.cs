@@ -77,6 +77,9 @@ namespace SocketApp
                     }
                     else
                     {
+                        // don't print if less than 10 KB
+                        if (state.PendingLength < 1024 * 10)
+                            break;
                         int remaining = Convert.ToInt32((state.PendingLength - state.ReceivedLength) / state.Speed);
                         Console.WriteLine($"[Transport] Speed {state.Speed.ToString("0.0")} KB/s | Pending {state.PendingLength / 1024} KB | Received {state.ReceivedLength / 1024} KB | ETA {remaining} s");
                         Console.Write("> ");
