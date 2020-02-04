@@ -388,7 +388,7 @@ namespace SocketApp
             {
                 dataObject.BinData = File.ReadAllBytes(filepath);
             }
-            catch (FileNotFoundException)
+            catch (Exception)
             {
                 Console.WriteLine("[Error] File Not Found");
                 return;

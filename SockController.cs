@@ -15,7 +15,7 @@ namespace SocketApp
         public event SockMgr.SockMgrAcceptEventHandler SockMgrAcceptEvent;
         public event SockMgr.SockMgrConnectEventHandler SockMgrConnectEvent;
         public event SockMgr.SockMgrShutdownBeginEventHandler SockMgrShutdownBeginEvent;
-        public event SockMgr.SockMgrReceiveEventHandler SockMgrReceiveEvent;  // when the data is still in raw byte[] form  // if extract data from BufferMgr, the later part could not receive it
+        public event SockMgr.SockMgrReceiveEventHandler SockMgrReceiveEvent;  // when the data is still in raw byte[] form
         public event SockMgr.SockMgrProtocolTopEventHandler SockMgrProtocolTopEvent;  // access processed data here
         SockList _sockList { set; get; } = new SockList();
         SockFactory _sockFactory;

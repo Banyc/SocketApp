@@ -31,8 +31,8 @@ namespace SocketApp
 
     public class SockMgrReceiveEventArgs : SockMgrEventArgs
     {
-        public SockMgrReceiveEventArgs(SockMgr handler, BufferMgr bufferMgr) { BufferMgr = bufferMgr; base.Handler = handler; }
-        public BufferMgr BufferMgr;
+        public SockMgrReceiveEventArgs(SockMgr handler, byte[] buffer) { Buffer = buffer; base.Handler = handler; }
+        public byte[] Buffer;
     }
 
     public class SockMgrProtocolTopEventArgs : SockMgrEventArgs
@@ -142,7 +142,7 @@ namespace SocketApp
         }
         private void OnSocketReceive(object sender, SocketReceiveEventArgs e)
         {
-            SockMgrReceiveEventArgs arg = new SockMgrReceiveEventArgs(this, e.BufferMgr);
+            SockMgrReceiveEventArgs arg = new SockMgrReceiveEventArgs(this, e.Buffer);
             SockMgrReceiveEvent?.Invoke(this, arg);
             _responser.OnSockMgrReceive(this, arg);
         }

@@ -121,6 +121,8 @@ namespace SocketApp.Protocol
             AESProtocol aesP = new AESProtocol();
             aesP.SetState((AESProtocolState)aesState.Clone());
             stackState.MiddleProtocols.Add(aesP);
+            // Framing
+            stackState.MiddleProtocols.Add(new FramingProtocol());
         }
 
         private ProtocolStack GetBroadcastStack()

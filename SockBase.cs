@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Net.Sockets;
 using System.Net;
 using System;
@@ -39,8 +40,8 @@ namespace SocketApp
 
     public class SocketReceiveEventArgs
     {
-        public SocketReceiveEventArgs(BufferMgr bufferMgr) { BufferMgr = bufferMgr; }
-        public BufferMgr BufferMgr;
+        public SocketReceiveEventArgs(byte[] buffer) { Buffer = buffer; }
+        public byte[] Buffer;
     }
 
     // State object for reading client data asynchronously  
@@ -54,7 +55,6 @@ namespace SocketApp
         // Receive buffer.  
         public byte[] buffer = new byte[BufferSize];
         // buffer manager
-        public BufferMgr bufferMgr = new BufferMgr();
     }
 
     public class ConnectStateObject
@@ -112,29 +112,14 @@ namespace SocketApp
             return _socket;
         }
 
-        public void Send(byte[] data)
-        {
-            int length = data.Length;
-            byte[] lengthByte = BitConverter.GetBytes(length);  // 4 Bytes
-            _socket.Send(lengthByte);  // send prefix
-            // TODO: replace it with BeginSend()
-            _socket.Send(data);  // send data
-        }
         // async
         public void StartSend(byte[] data, SocketSendEventHandler externalCallback = null, object externalCallbackState = null)
         {
-            // TODO: make it a standard framing protocol
-            int length = data.Length;
-            byte[] lengthByte = BitConverter.GetBytes(length);  // 4 Bytes
-            List<byte> prefix_data = new List<byte>();
-            prefix_data.AddRange(lengthByte);
-            prefix_data.AddRange(data);
-
             SendStateObject state = new SendStateObject();
             state.workSocket = _socket;
             state.externalCallback = externalCallback;
             state.externalCallbackState = externalCallbackState;
-            _socket.BeginSend(prefix_data.ToArray(), 0, prefix_data.ToArray().Length, SocketFlags.None,
+            _socket.BeginSend(data, 0, data.Length, SocketFlags.None,
                 new System.AsyncCallback(SendCallback), state);
         }
         private void SendCallback(IAsyncResult ar)
@@ -259,10 +244,8 @@ namespace SocketApp
 
                 if (bytesRead > 0)
                 {
-                    // add to buffer manager
-                    state.bufferMgr.AddBytes(state.buffer, bytesRead);
                     // raise event
-                    state.Source.SocketReceiveEvent?.Invoke(state.Source, new SocketReceiveEventArgs(state.bufferMgr));
+                    state.Source.SocketReceiveEvent?.Invoke(state.Source, new SocketReceiveEventArgs(state.buffer.Take(bytesRead).ToArray()));
                 }
 
                 // Not all data received. Get more.  

@@ -40,6 +40,16 @@ namespace SocketApp
         // respond to event at the top of the protocol stack
         private void OnNextHighLayerEvent(Protocol.DataContent dataContent)
         {
+            // print:
+            // [Message] remote -> local | time
+            // data
+            // [MessageEnd]
+            Console.WriteLine();
+            Console.WriteLine(string.Format("[Message] {0} -> {1} | {2}",
+                _sockMgr.GetSockBase().GetSocket().RemoteEndPoint.ToString(),
+                _sockMgr.GetSockBase().GetSocket().LocalEndPoint.ToString(),
+                DateTime.Now.ToString()));
+
             switch (dataContent.Type)
             {
                 case Protocol.DataProtocolType.Text:
@@ -65,7 +75,13 @@ namespace SocketApp
         {
             if (e.Handler != _sockMgr)
                 throw new Exception("this Responser is not serving the right SockMgr");
-            ProcessDataFromBuffer(e.BufferMgr, e.Handler);
+
+            DataContent dataContent = new DataContent();
+            dataContent.Data = e.Buffer;
+            dataContent.SockMgr = _sockMgr;
+            dataContent.SockController = _sockController;
+
+            e.Handler.GetProtocolStack().FromLowLayerToHere(dataContent);
         }
 
         // the connection might be a failed one
@@ -119,33 +135,6 @@ namespace SocketApp
                 Console.Write("> ");
             }
             catch (ObjectDisposedException) { }
-        }
-        
-        // TODO: make it a standard framing protocol
-        private void ProcessDataFromBuffer(BufferMgr bufferMgr, SockMgr sockMgr)
-        {
-            byte[] data;
-
-            data = bufferMgr.GetAdequateBytes();
-            DataContent dataContent = new DataContent();
-            dataContent.Data = data;
-            while (data.Length > 0)
-            {
-                // print:
-                // [Message] remote -> local | time
-                // data
-                // [MessageEnd]
-                Console.WriteLine();
-                Console.WriteLine(string.Format("[Message] {0} -> {1} | {2}",
-                    sockMgr.GetSockBase().GetSocket().RemoteEndPoint.ToString(),
-                    sockMgr.GetSockBase().GetSocket().LocalEndPoint.ToString(),
-                    DateTime.Now.ToString()));
-                sockMgr.GetProtocolStack().FromLowLayerToHere(dataContent);
-
-                data = bufferMgr.GetAdequateBytes();
-                dataContent = new DataContent();
-                dataContent.Data = data;
-            }
         }
     }
 }
