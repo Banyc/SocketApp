@@ -35,7 +35,7 @@ namespace SocketApp
         // respond to event at the bottom of the protocol stack
         private void OnNextLowLayerEvent(Protocol.DataContent dataContent)
         {
-            _sockMgr.GetSockBase().Send((byte[])dataContent.Data);
+            _sockMgr.GetSockBase().StartSend((byte[])dataContent.Data, dataContent.ExternalCallback, dataContent.ExternalCallbackState);
         }
         // respond to event at the top of the protocol stack
         private void OnNextHighLayerEvent(Protocol.DataContent dataContent)
@@ -121,6 +121,7 @@ namespace SocketApp
             catch (ObjectDisposedException) { }
         }
         
+        // TODO: make it a standard framing protocol
         private void ProcessDataFromBuffer(BufferMgr bufferMgr, SockMgr sockMgr)
         {
             byte[] data;

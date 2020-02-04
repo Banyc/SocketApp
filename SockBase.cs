@@ -1,6 +1,7 @@
 using System.Net.Sockets;
 using System.Net;
 using System;
+using System.Collections.Generic;
 
 namespace SocketApp
 {
@@ -8,6 +9,13 @@ namespace SocketApp
     {
         Listener,
         Client,
+    }
+
+    public class SocketSendEventArgs
+    {
+        public SocketSendEventArgs(SendStateObject state, SockBase handler) { State = state; Handler = handler; }
+        public SockBase Handler { get; }
+        public SendStateObject State { get; }
     }
 
     public class SocketAcceptEventArgs
@@ -66,9 +74,18 @@ namespace SocketApp
         public object externalCallbackState = null;
     }
 
+    public class SendStateObject
+    {
+        public Socket workSocket = null;
+        public SockBase.SocketSendEventHandler externalCallback = null;
+        public object externalCallbackState = null;
+    }
+
     // socket base to provide basic asynchronous interface of system socket
     public class SockBase
     {
+        public delegate void SocketSendEventHandler(object sender, SocketSendEventArgs e);
+        public event SocketSendEventHandler SocketSendEvent;
         public delegate void SocketAcceptEventHandler(object sender, SocketAcceptEventArgs e);
         public event SocketAcceptEventHandler SocketAcceptEvent;
         public delegate void SocketConnectEventHandler(object sender, SocketConnectEventArgs e);
@@ -102,6 +119,37 @@ namespace SocketApp
             _socket.Send(lengthByte);  // send prefix
             // TODO: replace it with BeginSend()
             _socket.Send(data);  // send data
+        }
+        // async
+        public void StartSend(byte[] data, SocketSendEventHandler externalCallback = null, object externalCallbackState = null)
+        {
+            // TODO: make it a standard framing protocol
+            int length = data.Length;
+            byte[] lengthByte = BitConverter.GetBytes(length);  // 4 Bytes
+            List<byte> prefix_data = new List<byte>();
+            prefix_data.AddRange(lengthByte);
+            prefix_data.AddRange(data);
+
+            SendStateObject state = new SendStateObject();
+            state.workSocket = _socket;
+            state.externalCallback = externalCallback;
+            state.externalCallbackState = externalCallbackState;
+            _socket.BeginSend(prefix_data.ToArray(), 0, prefix_data.ToArray().Length, SocketFlags.None,
+                new System.AsyncCallback(SendCallback), state);
+        }
+        private void SendCallback(IAsyncResult ar)
+        {
+            try
+            {
+                SendStateObject state = (SendStateObject) ar.AsyncState;
+                Socket handler = state.workSocket;
+                handler.EndSend(ar);
+
+                SocketSendEvent?.Invoke(this, new SocketSendEventArgs(state, this));
+                if (state.externalCallback != null)
+                    state.externalCallback(this, new SocketSendEventArgs(state, this));
+            }
+            catch (ObjectDisposedException) { }  // socket closed
         }
 
         // async Accept

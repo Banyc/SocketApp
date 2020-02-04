@@ -394,7 +394,13 @@ namespace SocketApp
                 return;
             }
             Console.WriteLine("Sending File");
-            sockMgr.SendSmallFile(dataObject);
+            sockMgr.SendSmallFile(dataObject, SendSmallFileCallback, filepath);
+        }
+
+        private static void SendSmallFileCallback(object sender, SockMgrSendEventArgs e)
+        {
+            Console.WriteLine($"[File] File \"{(string)e.ExternalCallbackState}\" Sent");
+            Console.Write("> ");
         }
 
         void CryptoConsole()

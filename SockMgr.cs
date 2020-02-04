@@ -4,6 +4,12 @@ namespace SocketApp
     {
         public SockMgr Handler;
     }
+    public class SockMgrSendEventArgs : SockMgrEventArgs
+    {
+        public SockMgrSendEventArgs(SockMgr handler, SendStateObject state, object externalCallbackState = null) { State = state; ExternalCallbackState = externalCallbackState; base.Handler = handler; }
+        public SendStateObject State { get; }
+        public object ExternalCallbackState  { get; }
+    }
     public class SockMgrAcceptEventArgs : SockMgrEventArgs
     {
         public SockMgrAcceptEventArgs(SockMgr handler, AcceptStateObject state, object externalCallbackState = null) { State = state; ExternalCallbackState = externalCallbackState; base.Handler = handler; }
@@ -47,9 +53,17 @@ namespace SocketApp
         public object externalCallbackState = null;
     }
 
+    public class SockMgrSendStateObject
+    {
+        public SockMgr.SockMgrSendEventHandler externalCallback = null;
+        public object externalCallbackState = null;
+    }
+
     // a wrapper of `SockBase` and the corresponding `Responser`
     public class SockMgr
     {
+        public delegate void SockMgrSendEventHandler(object sender, SockMgrSendEventArgs e);
+        public event SockMgrSendEventHandler SockMgrSendEvent;
         public delegate void SockMgrAcceptEventHandler(object sender, SockMgrAcceptEventArgs e);
         public event SockMgrAcceptEventHandler SockMgrAcceptEvent;
         public delegate void SockMgrConnectEventHandler(object sender, SockMgrConnectEventArgs e);
@@ -158,12 +172,29 @@ namespace SocketApp
             dataContent.Data = data;
             _protocolStack.FromHighLayerToHere(dataContent);
         }
-        public void SendSmallFile(Protocol.SmallFileDataObject dataObject)
+        public void SendSmallFile(Protocol.SmallFileDataObject dataObject, SockMgrSendEventHandler externalCallback = null, object externalCallbackState = null)
         {
+            // callback wrapper
+            SockMgrSendStateObject state = new SockMgrSendStateObject();
+            state.externalCallback = externalCallback;
+            state.externalCallbackState = externalCallbackState;
+            // load DataContent
             Protocol.DataContent dataContent = new Protocol.DataContent();
             dataContent.Type = Protocol.DataProtocolType.SmallFile;
             dataContent.Data = dataObject;
+            dataContent.ExternalCallback = SentCallback;
+            dataContent.ExternalCallbackState = state;
             _protocolStack.FromHighLayerToHere(dataContent);
+        }
+        private void SentCallback(object sender, SocketSendEventArgs e)
+        {
+            SockMgrSendStateObject state = (SockMgrSendStateObject)e.State.externalCallbackState;
+            SockMgr client = new SockMgr(e.Handler, _sockController, (Protocol.IProtocolFactory)_protocolFactory.Clone());
+            SockMgrSendEventArgs arg = new SockMgrSendEventArgs(client, e.State, state.externalCallbackState);
+            SockMgrSendEvent?.Invoke(this, arg);
+            if (state.externalCallback != null)
+                state.externalCallback(this, arg);
+            // _responser.OnSockMgrSent(this, arg);
         }
         
         // dataContent has been processed and delivered to the topest layer of Application
