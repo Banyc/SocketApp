@@ -43,7 +43,7 @@ namespace SocketApp.Protocol
 
         public void FromHighLayerToHere(DataContent dataContent)
         {
-            if (_state.Enabled)
+            if (_state.Enabled && dataContent.Data != null)
             {
                 byte[] encrypted = Encrypt((byte[])dataContent.Data);
                 dataContent.Data = encrypted;
@@ -53,7 +53,7 @@ namespace SocketApp.Protocol
 
         public void FromLowLayerToHere(DataContent dataContent)
         {
-            if (_state.Enabled)
+            if (_state.Enabled && dataContent.Data != null)
             {
                 try
                 {

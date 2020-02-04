@@ -67,6 +67,20 @@ namespace SocketApp
                     Console.WriteLine(string.Format("[MessageEnd]"));
                     Console.Write("> ");
                     break;
+                case Protocol.DataProtocolType.Management:
+                    TransportState state = dataContent.TransportState;
+                    if (state.PendingLength == 0)
+                    {
+                        // this branch should not be reached
+                        Console.WriteLine("[Transport] Done");
+                        Console.Write("> ");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[Transport] Speed {state.Speed.ToString("0.0")} KB/s | Pending {state.PendingLength} | Received {state.ReceivedLength}");
+                        Console.Write("> ");
+                    }
+                    break;
             }
             _sockMgr.RaiseSockMgrProtocolTopEvent(dataContent);
         }

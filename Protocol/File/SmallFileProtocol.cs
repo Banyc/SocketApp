@@ -32,39 +32,15 @@ namespace SocketApp.Protocol
         {
             SmallFileDataObject dataObject = (SmallFileDataObject)dataContent.Data;
             // Convert an object to a byte array
-            dataContent.Data = ObjectToByteArray(dataObject);
+            dataContent.Data = Util.ObjectByteConverter.ObjectToByteArray(dataObject);
             NextLowLayerEvent?.Invoke(dataContent);
         }
 
         public void FromLowLayerToHere(DataContent dataContent)
         {
             // Convert a byte array to an Object
-            dataContent.Data = (ICloneable)ByteArrayToObject((byte[])dataContent.Data);
+            dataContent.Data = (ICloneable)Util.ObjectByteConverter.ByteArrayToObject((byte[])dataContent.Data);
             NextHighLayerEvent?.Invoke(dataContent);
-        }
-
-        // Convert an object to a byte array
-        private static byte[] ObjectToByteArray(object obj)
-        {
-            BinaryFormatter bf = new BinaryFormatter();
-            using (var ms = new MemoryStream())
-            {
-                bf.Serialize(ms, obj);
-                return ms.ToArray();
-            }
-        }
-
-        // Convert a byte array to an Object
-        private static object ByteArrayToObject(byte[] arrBytes)
-        {
-            using (var memStream = new MemoryStream())
-            {
-                var binForm = new BinaryFormatter();
-                memStream.Write(arrBytes, 0, arrBytes.Length);
-                memStream.Seek(0, SeekOrigin.Begin);
-                var obj = binForm.Deserialize(memStream);
-                return obj;
-            }
         }
     }
 }

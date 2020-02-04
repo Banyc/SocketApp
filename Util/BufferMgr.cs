@@ -3,7 +3,7 @@ using System.Linq;
 using System;
 using System.Threading;
 
-namespace SocketApp
+namespace SocketApp.Util
 {
     public class BufferMgr
     {
@@ -39,6 +39,19 @@ namespace SocketApp
 
             _mutex.ReleaseMutex();
             return data.ToArray();
+        }
+
+        public int GetPendingLength()
+        {
+            if (_buffer.Count < 4)
+                return 0;
+            int length = BitConverter.ToInt32(_buffer.ToArray(), 0);
+            return length;
+        }
+
+        public int GetReceivedLength()
+        {
+            return _buffer.Count;
         }
     }
 }

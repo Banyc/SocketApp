@@ -70,28 +70,44 @@ namespace SocketApp.Protocol
             return ProtocolStack;
         }
 
-        private ProtocolStack GetDefaultStack()
+        private ProtocolStack GetFileBranch()
         {
-            ProtocolStackState state = new ProtocolStackState();
-
             // File Branch
             ProtocolStackState fileBranchState = new ProtocolStackState();
             fileBranchState.MiddleProtocols.Add(new SmallFileProtocol());  // SmallFileProtocol
             ProtocolStack fileBranch = new ProtocolStack();
             fileBranch.SetState(fileBranchState);
             fileBranchState.Type = DataProtocolType.SmallFile;
-
+            return fileBranch;
+        }
+        private ProtocolStack GetTextBranch()
+        {
             // Text Branch
             ProtocolStackState textBranchState = new ProtocolStackState();
             textBranchState.MiddleProtocols.Add(new UTF8Protocol());  // UTF8
             ProtocolStack textBranch = new ProtocolStack();
             textBranch.SetState(textBranchState);
             textBranchState.Type = DataProtocolType.Text;
+            return textBranch;
+        }
+        private ProtocolStack GetManagementBranch()
+        {
+            ProtocolStackState managementBranchState = new ProtocolStackState();
+            managementBranchState.MiddleProtocols.Add(new TransportInfoProtocol());  // Transport Info
+            ProtocolStack managementBranch = new ProtocolStack();
+            managementBranch.SetState(managementBranchState);
+            managementBranchState.Type = DataProtocolType.Management;
+            return managementBranch;
+        }
+        private ProtocolStack GetDefaultStack()
+        {
+            ProtocolStackState state = new ProtocolStackState();
 
             // branching
             List<ProtocolStack> branches = new List<ProtocolStack>();
-            branches.Add(textBranch);  // index 0
-            branches.Add(fileBranch);  // index 1
+            branches.Add(GetTextBranch());  // index 0
+            branches.Add(GetFileBranch());  // index 1
+            branches.Add(GetManagementBranch());  // index 2
             TypeBranchingProtocol branchingProtocol = new TypeBranchingProtocol();
             branchingProtocol.SetBranches(branches);
             state.MiddleProtocols.Add(branchingProtocol);

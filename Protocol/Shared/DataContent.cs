@@ -6,6 +6,25 @@ namespace SocketApp.Protocol
         Undefined,
         Text,
         SmallFile,
+        Management,
+        MaxInvalid
+    }
+
+    [Serializable]
+    public class TransportState : ICloneable
+    {
+        public int PendingLength = 0;  // in bufferMgr
+        public int ReceivedLength = 0;  // in bufferMgr
+        public double Speed = 0;  // KB/s
+
+        public object Clone()
+        {
+            TransportState state = new TransportState();
+            state.PendingLength = this.PendingLength;
+            state.ReceivedLength = this.ReceivedLength;
+            state.Speed = this.Speed;
+            return state;
+        }
     }
     
     public class DataContent : ICloneable  // passing through all layers of protocols/middlewares
@@ -17,6 +36,8 @@ namespace SocketApp.Protocol
         public byte[] AesKey = null;  // to update the AesKey through protocol stack
         public bool IsAesError = false;
         public bool IsAckWrong = false;
+        public TransportState TransportState = new TransportState();
+        // passed from top
         public SockBase.SocketSendEventHandler ExternalCallback = null;
         public object ExternalCallbackState = null;
         // hint: add necessary field here
@@ -31,6 +52,7 @@ namespace SocketApp.Protocol
             dataContent.AesKey = (byte[])AesKey?.Clone();
             dataContent.IsAesError = this.IsAesError;
             dataContent.IsAckWrong = this.IsAckWrong;
+            dataContent.TransportState = (TransportState)this.TransportState.Clone();
             dataContent.ExternalCallback = this.ExternalCallback;
             dataContent.ExternalCallbackState = this.ExternalCallbackState;
             return dataContent;

@@ -37,6 +37,12 @@ namespace SocketApp.Protocol
             byte[] seqHeader;
             byte[] body;
             int seq;
+            // it is a state only packet
+            if (dataContent.Data == null)
+            {
+                NextHighLayerEvent?.Invoke(dataContent);
+                return;
+            }
             try
             {
                 seqHeader = ((byte[])dataContent.Data).Take(4).ToArray();

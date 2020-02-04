@@ -7,7 +7,7 @@ namespace SocketApp.Protocol
     {
         public event NextLowLayerEventHandler NextLowLayerEvent;
         public event NextHighLayerEventHandler NextHighLayerEvent;
-        private BufferMgr _bufferMgr = new BufferMgr();
+        private Util.BufferMgr _bufferMgr = new Util.BufferMgr();
         public FramingProtocol() { }
 
         public void FromHighLayerToHere(DataContent dataContent)
@@ -36,7 +36,10 @@ namespace SocketApp.Protocol
 
                 data = _bufferMgr.GetAdequateBytes();
             }
-            
+
+            dataContent.TransportState.PendingLength = _bufferMgr.GetPendingLength();
+            dataContent.TransportState.ReceivedLength = _bufferMgr.GetReceivedLength();
+            NextHighLayerEvent?.Invoke(dataContent);
         }
     }
 }

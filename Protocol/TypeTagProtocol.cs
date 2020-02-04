@@ -4,6 +4,7 @@ using System.Linq;
 
 namespace SocketApp.Protocol
 {
+    // 4-Byte typeHeader to deceide which type the data is
     public class TypeTagProtocol : IProtocol
     {
         public event NextLowLayerEventHandler NextLowLayerEvent;
@@ -24,11 +25,22 @@ namespace SocketApp.Protocol
         {
             byte[] typeHeader;
             byte[] body;
+            // TCP segment has not been sufficiently collected
+            if ((byte[])dataContent.Data == null)
+            {
+                dataContent.Type = DataProtocolType.Management;
+                NextHighLayerEvent?.Invoke(dataContent);
+                return;
+            }
+            // invalid header
+            if (((byte[])dataContent.Data).Length < 4)
+                return;
+            // first 4 bytes is the type header
             typeHeader = ((byte[])dataContent.Data).Take(4).ToArray();
             body = ((byte[])dataContent.Data).Skip(4).ToArray();
             int typeIndex = BitConverter.ToInt32(typeHeader);
             dataContent.Data = body;
-            if (typeIndex > (int)DataProtocolType.SmallFile || typeIndex < (int)DataProtocolType.Undefined)
+            if (typeIndex >= (int)DataProtocolType.MaxInvalid || typeIndex <= (int)DataProtocolType.Undefined)
                 return;  // discard if out of range
             dataContent.Type = (DataProtocolType)typeIndex;
             NextHighLayerEvent?.Invoke(dataContent);
