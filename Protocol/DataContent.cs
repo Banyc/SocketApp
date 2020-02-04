@@ -16,6 +16,7 @@ namespace SocketApp.Protocol
         public DataProtocolType Type = DataProtocolType.Undefined;  // determine which branch of protocol to go
         public byte[] AesKey = null;  // to update the AesKey through protocol stack
         public bool IsAesError = false;
+        public bool IsAckWrong = false;
         public SockBase.SocketSendEventHandler ExternalCallback = null;
         public object ExternalCallbackState = null;
         // hint: add necessary field here
@@ -29,6 +30,7 @@ namespace SocketApp.Protocol
             dataContent.Type = this.Type;
             dataContent.AesKey = (byte[])AesKey?.Clone();
             dataContent.IsAesError = this.IsAesError;
+            dataContent.IsAckWrong = this.IsAckWrong;
             dataContent.ExternalCallback = this.ExternalCallback;
             dataContent.ExternalCallbackState = this.ExternalCallbackState;
             return dataContent;

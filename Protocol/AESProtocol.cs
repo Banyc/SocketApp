@@ -64,7 +64,6 @@ namespace SocketApp.Protocol
                 catch (CryptographicException)
                 {
                     dataContent.IsAesError = true;
-                    return;  // discard this message
                 }
             }
             NextHighLayerEvent?.Invoke(dataContent);

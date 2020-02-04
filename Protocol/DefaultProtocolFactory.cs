@@ -100,12 +100,15 @@ namespace SocketApp.Protocol
             TypeTagProtocol typeTagProtocol = new TypeTagProtocol();
             state.MiddleProtocols.Add(typeTagProtocol);
 
+            // Block invalid DataContent
+            state.MiddleProtocols.Add(new BlockProtocol());
             // AES
             AESProtocol aesP = new AESProtocol();
             aesP.SetState((AESProtocolState)_options.SecondLowAESProtocolState.Clone());
             state.MiddleProtocols.Add(aesP);
 
-            BasicSecurityLayer(state, _options.FirstLowAESProtocolState);
+            // Basic Security Layers
+            AddBasicSecurityLayer(state, _options.FirstLowAESProtocolState);
 
             state.Type = DataProtocolType.Text;
             ProtocolStack protocolStack = new ProtocolStack();
@@ -113,8 +116,10 @@ namespace SocketApp.Protocol
             return protocolStack;
         }
 
-        private static void BasicSecurityLayer(ProtocolStackState stackState, AESProtocolState aesState)
+        private static void AddBasicSecurityLayer(ProtocolStackState stackState, AESProtocolState aesState)
         {
+            // Disconnect
+            stackState.MiddleProtocols.Add(new DisconnectProtocol());
             // Seq (this protocol will block broadcasted messages)
             stackState.MiddleProtocols.Add(new SequenceProtocol());
             // AES
@@ -135,7 +140,7 @@ namespace SocketApp.Protocol
             broadcaseState.SockMgr = _options.SockMgr;
             state.MiddleProtocols.Add(new BroadcastProtocol(broadcaseState));
 
-            BasicSecurityLayer(state, _options.FirstLowAESProtocolState);
+            AddBasicSecurityLayer(state, _options.FirstLowAESProtocolState);
 
             ProtocolStack protocolStack = new ProtocolStack();
             protocolStack.SetState(state);

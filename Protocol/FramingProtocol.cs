@@ -36,6 +36,7 @@ namespace SocketApp.Protocol
 
                 data = _bufferMgr.GetAdequateBytes();
             }
+            
         }
     }
 }

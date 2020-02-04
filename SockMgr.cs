@@ -168,6 +168,8 @@ namespace SocketApp
         public void SendText(string data)
         {
             Protocol.DataContent dataContent = new Protocol.DataContent();
+            dataContent.SockController = _sockController;
+            dataContent.SockMgr = this;
             dataContent.Type = Protocol.DataProtocolType.Text;
             dataContent.Data = data;
             _protocolStack.FromHighLayerToHere(dataContent);
@@ -180,6 +182,8 @@ namespace SocketApp
             state.externalCallbackState = externalCallbackState;
             // load DataContent
             Protocol.DataContent dataContent = new Protocol.DataContent();
+            dataContent.SockController = _sockController;
+            dataContent.SockMgr = this;
             dataContent.Type = Protocol.DataProtocolType.SmallFile;
             dataContent.Data = dataObject;
             dataContent.ExternalCallback = SentCallback;

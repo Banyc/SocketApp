@@ -5,6 +5,7 @@ using System.Linq;
 namespace SocketApp.Protocol
 {
     // prevent replay attack
+    // Challenge–response authentication
     public class SequenceProtocol : IProtocol
     {
         public event NextLowLayerEventHandler NextLowLayerEvent;
@@ -35,16 +36,28 @@ namespace SocketApp.Protocol
         {
             byte[] seqHeader;
             byte[] body;
-            seqHeader = ((byte[])dataContent.Data).Take(4).ToArray();
-            body = ((byte[])dataContent.Data).Skip(4).ToArray();
-            int seq = BitConverter.ToInt32(seqHeader);
-            if (_oppAck == null)
-                _oppAck = seq;
-            if (seq != _oppAck)
-                // facing a replay attack
-                return;
-            ++_oppAck;
-            dataContent.Data = body;
+            int seq;
+            try
+            {
+                seqHeader = ((byte[])dataContent.Data).Take(4).ToArray();
+                body = ((byte[])dataContent.Data).Skip(4).ToArray();
+                seq = BitConverter.ToInt32(seqHeader);
+                if (_oppAck == null)
+                    _oppAck = seq;
+                if (seq != _oppAck)
+                {
+                    dataContent.IsAckWrong = true;
+                }
+                if (seq == _oppAck)
+                {
+                    ++_oppAck;
+                    dataContent.Data = body;
+                }
+            }
+            catch (Exception)
+            {
+                dataContent.IsAckWrong = true;
+            }
             NextHighLayerEvent?.Invoke(dataContent);
         }
     }

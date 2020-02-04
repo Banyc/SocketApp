@@ -58,11 +58,12 @@ namespace SocketApp
                     Console.Write("> ");
                     break;
                 case Protocol.DataProtocolType.SmallFile:
+                    string dirPath = "./recvFiles";
                     Protocol.SmallFileDataObject dataObject = (Protocol.SmallFileDataObject)dataContent.Data;
-                    Console.WriteLine($"Saving File \"{dataObject.Filename}\" to \"./recvFiles\" ...");
-                    Directory.CreateDirectory("./recvFiles");
-                    File.WriteAllBytes(Path.Combine("./recvFiles", dataObject.Filename), dataObject.BinData);
-                    Console.WriteLine($"File \"{dataObject.Filename}\" saved");
+                    Console.WriteLine($"Saving File \"{dataObject.Filename}\" to \"{dirPath}\" ...");
+                    Directory.CreateDirectory(dirPath);
+                    File.WriteAllBytes(Path.Combine(dirPath, dataObject.Filename), dataObject.BinData);
+                    Console.WriteLine($"File \"{Path.Combine(dirPath, dataObject.Filename)}\" saved");
                     Console.WriteLine(string.Format("[MessageEnd]"));
                     Console.Write("> ");
                     break;

@@ -128,7 +128,7 @@ namespace SocketApp
             {
                 SendStateObject state = (SendStateObject) ar.AsyncState;
                 Socket handler = state.workSocket;
-                handler.EndSend(ar);
+                handler.EndSend(ar);  // BUG: returns before data sent
 
                 SocketSendEvent?.Invoke(this, new SocketSendEventArgs(state, this));
                 if (state.externalCallback != null)
