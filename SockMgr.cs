@@ -193,8 +193,7 @@ namespace SocketApp
         private void SentCallback(object sender, SocketSendEventArgs e)
         {
             SockMgrSendStateObject state = (SockMgrSendStateObject)e.State.externalCallbackState;
-            SockMgr client = new SockMgr(e.Handler, _sockController, (Protocol.IProtocolFactory)_protocolFactory.Clone());
-            SockMgrSendEventArgs arg = new SockMgrSendEventArgs(client, e.State, state.externalCallbackState);
+            SockMgrSendEventArgs arg = new SockMgrSendEventArgs(this, e.State, state.externalCallbackState);
             SockMgrSendEvent?.Invoke(this, arg);
             if (state.externalCallback != null)
                 state.externalCallback(this, arg);
