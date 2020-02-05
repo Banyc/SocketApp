@@ -44,6 +44,9 @@ namespace SocketApp.Protocol
 
         public void FromLowLayerToHere(DataContent dataContent)
         {
+            // block invalid dataContent
+            if (dataContent.Data == null)
+                return;
             // server start broadcasting
             foreach (SockMgr client in _state.SockController.GetSockList().Clients)
             {
