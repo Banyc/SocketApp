@@ -47,7 +47,7 @@ namespace SocketApp.Protocol
         {
             _timeoutTimer.Stop();
             _timeoutTimer.Start();
-            if (((byte[])dataContent.Data).Length == 0)  // discard empty message
+            if (((byte[])dataContent.Data)?.Length == 0)  // discard empty message
                 return;
             NextHighLayerEvent?.Invoke(dataContent);
         }
