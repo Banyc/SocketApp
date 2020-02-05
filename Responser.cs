@@ -62,7 +62,7 @@ namespace SocketApp
                     Protocol.SmallFileDataObject dataObject = (Protocol.SmallFileDataObject)dataContent.Data;
                     Console.WriteLine($"Saving File \"{dataObject.Filename}\" to \"{dirPath}\" ...");
                     Directory.CreateDirectory(dirPath);
-                    File.WriteAllBytes(Path.Combine(dirPath, dataObject.Filename), dataObject.BinData);
+                    Util.SaveFile.WriteFile(Path.Combine(dirPath, dataObject.Filename), dataObject.BinData);
                     Console.WriteLine($"File \"{Path.Combine(dirPath, dataObject.Filename)}\" saved");
                     Console.WriteLine(string.Format("[MessageEnd]"));
                     Console.Write("> ");

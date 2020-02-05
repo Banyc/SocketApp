@@ -466,9 +466,9 @@ namespace SocketApp
                     System.Security.Cryptography.Aes aesAlg = System.Security.Cryptography.Aes.Create();
                     aesAlg.GenerateKey();
                     byte[] key = aesAlg.Key;
-                    File.WriteAllBytes("./AES.-2.key", key);
+                    Util.SaveFile.WriteFile("./AES.-2.key", key);
                     aesAlg.GenerateKey();
-                    File.WriteAllBytes("./AES.-1.key", aesAlg.Key);
+                    Util.SaveFile.WriteFile("./AES.-1.key", aesAlg.Key);
                     break;
             }
         }
