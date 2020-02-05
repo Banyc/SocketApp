@@ -83,12 +83,13 @@ namespace SocketApp
                         // don't print if less than 10 KB
                         if (state.PendingLength < 1024 * 10)
                             break;
-                        double remainingSec = (state.PendingLength - state.ReceivedLength) / 1024 / state.Speed;
+                        double remainingSec;
+                        remainingSec = (state.PendingLength - state.ReceivedLength) / 1024 / state.Speed;
                         Console.WriteLine(string.Format("[Transport] {0} -> {1} | {2}",
                             _sockMgr.GetSockBase().GetSocket().RemoteEndPoint.ToString(),
                             _sockMgr.GetSockBase().GetSocket().LocalEndPoint.ToString(),
                             DateTime.Now.ToString()));
-                        Console.WriteLine($"[Transport] Speed {state.Speed.ToString("0.0")} KB/s | Pending {state.PendingLength / 1024} KB | Received {state.ReceivedLength / 1024} KB | ETA {remainingSec.ToString("0")} s");
+                        Console.WriteLine($"[Transport] Speed {state.Speed.ToString("0.0")} KB/s | Pending {Util.FormatConverter.ByteSizeToHumanReadable(state.PendingLength)} | Received {Util.FormatConverter.ByteSizeToHumanReadable(state.ReceivedLength)} | ETA {Util.FormatConverter.SecondToHumanReadable(remainingSec)}");
                         Console.Write("> ");
                     }
                     break;
