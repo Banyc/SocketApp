@@ -34,5 +34,5 @@ To register your protocols, build your own protocol factory deriving from `IProt
 ## TODO
 
 - [ ] Support UDP
-- [ ] Handle Errors
 - [ ] SocketApp Hosts a Http Proxy Server
+- [ ] Big file transportation protocol

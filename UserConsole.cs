@@ -59,8 +59,25 @@ namespace SocketApp
                     case "2":  // manage client
                         Console.WriteLine("Enter the index of the client");
                         Console.Write("> ");
-                        int index = int.Parse(Console.ReadLine());
-                        InterfaceMenu(_sockController.GetSockList().Clients[index]);
+                        int index;
+                        try
+                        {
+                            index = int.Parse(Console.ReadLine());
+                        }
+                        catch (FormatException)
+                        {
+                            Console.WriteLine("[Error] Invalid Input");
+                            break;
+                        }
+                        try
+                        {
+                            InterfaceMenu(_sockController.GetSockList().Clients[index]);
+                        }
+                        catch (ArgumentOutOfRangeException)
+                        {
+                            Console.WriteLine("[Error] Index Out Of Range");
+                            break;
+                        }
                         break;
                     case "3":  // Establish new connection
                         BuildClientConsole();
@@ -77,8 +94,25 @@ namespace SocketApp
                     case "7":
                         Console.WriteLine("Enter the index of the listener");
                         Console.Write("> ");
-                        int listenerIndex = int.Parse(Console.ReadLine());
-                        ListenerMenu(_sockController.GetSockList().Listeners[listenerIndex]);
+                        int listenerIndex;
+                        try
+                        {
+                            listenerIndex = int.Parse(Console.ReadLine());
+                        }
+                        catch (FormatException)
+                        {
+                            Console.WriteLine("[Error] Invalid Input");
+                            break;
+                        }
+                        try
+                        {
+                            ListenerMenu(_sockController.GetSockList().Listeners[listenerIndex]);
+                        }
+                        catch (ArgumentOutOfRangeException)
+                        {
+                            Console.WriteLine("[Error] Index Out Of Range");
+                            break;
+                        }
                         break;
                     case "8":
                         ShutdownAll();
@@ -157,8 +191,24 @@ namespace SocketApp
             if (localPortStr == "")
                 localPort = 11000;
             else
-                localPort = int.Parse(localPortStr);
-            options.ListenerIpAddress = IPAddress.Parse(localIpAddr);
+                try
+                {
+                    localPort = int.Parse(localPortStr);
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine("[Error] Invalid Input");
+                    return;
+                }
+            try
+            {
+                options.ListenerIpAddress = IPAddress.Parse(localIpAddr);
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("[Error] Invalid Input");
+                return;
+            }
             options.ListenerPort = localPort;
             options.ProtocolFactory = new Protocol.DefaultProtocolFactory(_protocolOptions);
             // begin to build
@@ -191,7 +241,15 @@ namespace SocketApp
             int timesToTry = -1;
             if (ipAddr == "")
             {
-                options.ListenerIpAddress = IPAddress.Parse("127.0.0.1");
+                try
+                {
+                    options.ListenerIpAddress = IPAddress.Parse("127.0.0.1");
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine("[Error] Invalid Input");
+                    return;
+                }
                 options.ListenerPort = 11000;
                 timesToTry = 1;
             }
@@ -199,7 +257,16 @@ namespace SocketApp
             {
                 Console.WriteLine("Enter server port");
                 Console.Write("> ");
-                int remotePort = int.Parse(Console.ReadLine());
+                int remotePort;
+                try
+                {
+                    remotePort = int.Parse(Console.ReadLine());
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine("[Error] Invalid Input");
+                    return;
+                }
                 Console.WriteLine("Enter local port (leave blank for auto)");
                 Console.Write("> ");
                 string localPortStr = Console.ReadLine();
@@ -209,20 +276,52 @@ namespace SocketApp
                 if (timesToTryStr == "")
                     timesToTry = 1;
                 else
-                    timesToTry = int.Parse(timesToTryStr);
+                    try
+                    {
+                        timesToTry = int.Parse(timesToTryStr);
+                    }
+                    catch (FormatException)
+                    {
+                        Console.WriteLine("[Error] Invalid Input");
+                        return;
+                    }
 
                 try
                 {
                     if (localPortStr == "")
                     {
-                        options.ListenerIpAddress = IPAddress.Parse(ipAddr);
+                        try
+                        {
+                            options.ListenerIpAddress = IPAddress.Parse(ipAddr);
+                        }
+                        catch (FormatException)
+                        {
+                            Console.WriteLine("[Error] Invalid Input");
+                            return;
+                        }
                         options.ListenerPort = remotePort;
                     }
                     else
                     {
-                        options.ListenerIpAddress = IPAddress.Parse(ipAddr);
+                        try
+                        {
+                            options.ListenerIpAddress = IPAddress.Parse(ipAddr);
+                        }
+                        catch (FormatException)
+                        {
+                            Console.WriteLine("[Error] Invalid Input");
+                            return;
+                        }
                         options.ListenerPort = remotePort;
-                        options.ClientPort = int.Parse(localPortStr);
+                        try
+                        {
+                            options.ClientPort = int.Parse(localPortStr);
+                        }
+                        catch (FormatException)
+                        {
+                            Console.WriteLine("[Error] Invalid Input");
+                            return;
+                        }
                     }
                 }
                 catch (SocketException ex)
@@ -321,9 +420,26 @@ namespace SocketApp
             Console.WriteLine("[Interface-AES] Select one by index");
             Console.Write("> ");
             input = Console.ReadLine();
-            int index = int.Parse(input);
+            int index;
+            try
+            {
+                index = int.Parse(input);
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("[Error] Invalid Input");
+                return;
+            }
 
-            state = aesProtocols[index].GetState();
+            try
+            {
+                state = aesProtocols[index].GetState();
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                Console.WriteLine("[Error] Index Out Of Range");
+                return;
+            }
 
             Console.WriteLine("[Interface-AES]");
             Console.WriteLine("1. Set Key");
@@ -519,7 +635,15 @@ namespace SocketApp
             }
             Console.Write("> ");
             string input = Console.ReadLine();
-            _protocolOptions.StackTypeOfChoice = (Protocol.ProtocolStackType)int.Parse(input);
+            try
+            {
+                _protocolOptions.StackTypeOfChoice = (Protocol.ProtocolStackType)int.Parse(input);
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("[Error] Invalid Input");
+                return;
+            }
         }
     }
 }
