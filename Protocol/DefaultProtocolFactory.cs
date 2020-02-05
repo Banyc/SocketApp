@@ -136,9 +136,9 @@ namespace SocketApp.Protocol
         private static void AddBasicSecurityLayer(ProtocolStackState stackState, AESProtocolState aesState)
         {
             // ordering
-            Mutex topDownOrdering = new Mutex();
-            Mutex buttomUpOrdering = new Mutex();
-            
+            ManualResetEvent topDownOrdering = new ManualResetEvent(true);
+            ManualResetEvent buttomUpOrdering = new ManualResetEvent(true);
+
             // Disconnect
             stackState.MiddleProtocols.Add(new DisconnectProtocol());
             // Heartbeat

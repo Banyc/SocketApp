@@ -14,10 +14,10 @@ namespace SocketApp.Protocol
         // a full message as minimal unit
         private int? _oppAck = null;
         private int? _thisAck = null;
-        Mutex _topDownOrdering;
-        Mutex _buttomUpOrdering;
+        ManualResetEvent _topDownOrdering;
+        ManualResetEvent _buttomUpOrdering;
 
-        public SequenceProtocol(Mutex topDownOrdering, Mutex buttomUpOrdering)
+        public SequenceProtocol(ManualResetEvent topDownOrdering, ManualResetEvent buttomUpOrdering)
         {
             Random rnd = new Random();
             _thisAck = rnd.Next();
@@ -27,7 +27,16 @@ namespace SocketApp.Protocol
 
         public void FromHighLayerToHere(DataContent dataContent)
         {
-            _topDownOrdering.WaitOne();
+            try
+            {
+                _topDownOrdering.WaitOne();
+            }
+            catch (AbandonedMutexException)
+            {
+                // The wait completed due to an abandoned mutex.
+                // specific reason unknown
+                // Workaround
+            }
             byte[] seqHeader;
             seqHeader = BitConverter.GetBytes(_thisAck.Value);
             List<byte> header_body = new List<byte>();
@@ -47,6 +56,7 @@ namespace SocketApp.Protocol
             if (dataContent.Data == null)
             {
                 NextHighLayerEvent?.Invoke(dataContent);
+                _buttomUpOrdering.Set();
                 return;
             }
             try
@@ -70,7 +80,7 @@ namespace SocketApp.Protocol
             {
                 dataContent.IsAckWrong = true;
             }
-            _buttomUpOrdering.ReleaseMutex();
+            _buttomUpOrdering.Set();
             NextHighLayerEvent?.Invoke(dataContent);
         }
     }

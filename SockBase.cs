@@ -135,6 +135,7 @@ namespace SocketApp
                     state.externalCallback(this, new SocketSendEventArgs(state, this));
             }
             catch (ObjectDisposedException) { }  // socket closed
+            catch (SocketException) { }  // socket closed by peer
         }
 
         // async Accept
