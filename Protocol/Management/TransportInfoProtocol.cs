@@ -44,9 +44,10 @@ namespace SocketApp.Protocol
                 //  update
                 _prevReceivedLength = state.ReceivedLength;
                 _prevTime = DateTime.Now;
-                // tell peer about the transport process
+                // write state in dataContent
                 Byte[] data = Util.ObjectByteConverter.ObjectToByteArray(state);
                 dataContent.Data = data;
+                // tell peer about the transport process
                 NextLowLayerEvent?.Invoke((DataContent)dataContent.Clone());
             }
             // still sending (this is sender)

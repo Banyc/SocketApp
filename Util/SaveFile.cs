@@ -6,12 +6,13 @@ namespace SocketApp.Util
 {
     public static class SaveFile
     {
-        public static void WriteFile(string path, byte[] data)
+        // return new path name
+        public static string WriteFile(string path, byte[] data)
         {
             if (!File.Exists(path))
             {
                 File.WriteAllBytes(path, data);
-                return;
+                return path;
             }
             // find out the last contiguous index
             int index;
@@ -36,6 +37,7 @@ namespace SocketApp.Util
             } while (File.Exists(path));
 
             File.WriteAllBytes(path, data);
+            return path;
         }
     }
 }

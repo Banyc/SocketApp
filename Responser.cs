@@ -40,31 +40,34 @@ namespace SocketApp
         // respond to event at the top of the protocol stack
         private void OnNextHighLayerEvent(Protocol.DataContent dataContent)
         {
-            // print:
-            // [Message] remote -> local | time
-            // data
-            // [MessageEnd]
-            Console.WriteLine();
-            Console.WriteLine(string.Format("[Message] {0} -> {1} | {2}",
-                _sockMgr.GetSockBase().GetSocket().RemoteEndPoint.ToString(),
-                _sockMgr.GetSockBase().GetSocket().LocalEndPoint.ToString(),
-                DateTime.Now.ToString()));
-
             switch (dataContent.Type)
             {
                 case Protocol.DataProtocolType.Text:
+                    // print:
+                    // [Message] remote -> local | time
+                    // data
+                    // [MessageEnd]
+                    Console.WriteLine();
+                    Console.WriteLine(string.Format("[Message] {0} -> {1} | {2}",
+                        _sockMgr.GetSockBase().GetSocket().RemoteEndPoint.ToString(),
+                        _sockMgr.GetSockBase().GetSocket().LocalEndPoint.ToString(),
+                        DateTime.Now.ToString()));
                     Console.WriteLine((string)dataContent.Data);
                     Console.WriteLine(string.Format("[MessageEnd]"));
                     Console.Write("> ");
                     break;
                 case Protocol.DataProtocolType.SmallFile:
                     string dirPath = "./recvFiles";
+                    Console.WriteLine(string.Format("[File] {0} -> {1} | {2}",
+                        _sockMgr.GetSockBase().GetSocket().RemoteEndPoint.ToString(),
+                        _sockMgr.GetSockBase().GetSocket().LocalEndPoint.ToString(),
+                        DateTime.Now.ToString()));
                     Protocol.SmallFileDataObject dataObject = (Protocol.SmallFileDataObject)dataContent.Data;
                     Console.WriteLine($"Saving File \"{dataObject.Filename}\" to \"{dirPath}\" ...");
                     Directory.CreateDirectory(dirPath);
-                    Util.SaveFile.WriteFile(Path.Combine(dirPath, dataObject.Filename), dataObject.BinData);
-                    Console.WriteLine($"File \"{Path.Combine(dirPath, dataObject.Filename)}\" saved");
-                    Console.WriteLine(string.Format("[MessageEnd]"));
+                    string filepath = Util.SaveFile.WriteFile(Path.Combine(dirPath, dataObject.Filename), dataObject.BinData);
+                    Console.WriteLine($"File \"{filepath}\" saved");
+                    Console.WriteLine(string.Format("[FileEnd]"));
                     Console.Write("> ");
                     break;
                 case Protocol.DataProtocolType.Management:
@@ -80,8 +83,12 @@ namespace SocketApp
                         // don't print if less than 10 KB
                         if (state.PendingLength < 1024 * 10)
                             break;
-                        int remaining = Convert.ToInt32((state.PendingLength - state.ReceivedLength) / state.Speed);
-                        Console.WriteLine($"[Transport] Speed {state.Speed.ToString("0.0")} KB/s | Pending {state.PendingLength / 1024} KB | Received {state.ReceivedLength / 1024} KB | ETA {remaining} s");
+                        double remainingSec = (state.PendingLength - state.ReceivedLength) / 1024 / state.Speed;
+                        Console.WriteLine(string.Format("[Transport] {0} -> {1} | {2}",
+                            _sockMgr.GetSockBase().GetSocket().RemoteEndPoint.ToString(),
+                            _sockMgr.GetSockBase().GetSocket().LocalEndPoint.ToString(),
+                            DateTime.Now.ToString()));
+                        Console.WriteLine($"[Transport] Speed {state.Speed.ToString("0.0")} KB/s | Pending {state.PendingLength / 1024} KB | Received {state.ReceivedLength / 1024} KB | ETA {remainingSec.ToString("0")} s");
                         Console.Write("> ");
                     }
                     break;
