@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Collections.Generic;
 using System;
 using System.Linq;
@@ -14,15 +15,20 @@ namespace SocketApp.Protocol
         // a full message as minimal unit
         private int? _oppAck = null;
         private int? _thisAck = null;
+        Mutex _topDownOrdering;
+        Mutex _buttomUpOrdering;
 
-        public SequenceProtocol()
+        public SequenceProtocol(Mutex topDownOrdering, Mutex buttomUpOrdering)
         {
             Random rnd = new Random();
             _thisAck = rnd.Next();
+            _topDownOrdering = topDownOrdering;
+            _buttomUpOrdering = buttomUpOrdering;
         }
 
         public void FromHighLayerToHere(DataContent dataContent)
         {
+            _topDownOrdering.WaitOne();
             byte[] seqHeader;
             seqHeader = BitConverter.GetBytes(_thisAck.Value);
             List<byte> header_body = new List<byte>();
@@ -65,6 +71,7 @@ namespace SocketApp.Protocol
             {
                 dataContent.IsAckWrong = true;
             }
+            _buttomUpOrdering.ReleaseMutex();
             NextHighLayerEvent?.Invoke(dataContent);
         }
     }

@@ -1,3 +1,4 @@
+using System.Threading;
 using System;
 using System.Collections.Generic;
 
@@ -134,6 +135,10 @@ namespace SocketApp.Protocol
 
         private static void AddBasicSecurityLayer(ProtocolStackState stackState, AESProtocolState aesState)
         {
+            // ordering
+            Mutex topDownOrdering = new Mutex();
+            Mutex buttomUpOrdering = new Mutex();
+            
             // Disconnect
             stackState.MiddleProtocols.Add(new DisconnectProtocol());
             // Heartbeat
@@ -141,13 +146,13 @@ namespace SocketApp.Protocol
             // Timestamp
             stackState.MiddleProtocols.Add(new TimestampProtocol());
             // Seq (this protocol will block broadcasted messages)
-            stackState.MiddleProtocols.Add(new SequenceProtocol());
+            stackState.MiddleProtocols.Add(new SequenceProtocol(topDownOrdering, buttomUpOrdering));
             // AES
             AESProtocol aesP = new AESProtocol();
             aesP.SetState((AESProtocolState)aesState.Clone());
             stackState.MiddleProtocols.Add(aesP);
             // Framing
-            stackState.MiddleProtocols.Add(new FramingProtocol());
+            stackState.MiddleProtocols.Add(new FramingProtocol(topDownOrdering, buttomUpOrdering));
         }
 
         private ProtocolStack GetBroadcastStack()
