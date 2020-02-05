@@ -4,15 +4,16 @@ using System.Linq;
 
 namespace SocketApp.Protocol
 {
+    // flexible expire time for different lengths
     public class TimestampProtocol : IProtocol
     {
         public event NextLowLayerEventHandler NextLowLayerEvent;
         public event NextHighLayerEventHandler NextHighLayerEvent;
 
-        public long _timeoutInTicks;
-        public TimestampProtocol(long timeoutInTicks = 1000 * 60 * TimeSpan.TicksPerMillisecond)
+        public double _expireSpeedBytePerSec;
+        public TimestampProtocol(double expireSpeedBytePerSec = 1)
         {
-            _timeoutInTicks = timeoutInTicks;
+            _expireSpeedBytePerSec = expireSpeedBytePerSec;
         }
 
         public void FromHighLayerToHere(DataContent dataContent)
@@ -39,7 +40,9 @@ namespace SocketApp.Protocol
                 long timestampLong = BitConverter.ToInt64(timestampBytes);
                 dataContent.Data = data;
                 DateTime timestamp = DateTime.FromBinary(timestampLong);
-                if (DateTime.Now - timestamp > new TimeSpan(_timeoutInTicks))
+                // flexible expire time for different lengths
+                double averageSpeed = ((byte[])dataContent.Data).Length / (DateTime.Now - timestamp).TotalSeconds;  // B/s
+                if (averageSpeed < _expireSpeedBytePerSec)
                 {
                     dataContent.IsTimestampWrong = true;
                 }
