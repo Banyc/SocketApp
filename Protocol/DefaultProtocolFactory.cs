@@ -136,6 +136,8 @@ namespace SocketApp.Protocol
         {
             // Disconnect
             stackState.MiddleProtocols.Add(new DisconnectProtocol());
+            // Heartbeat
+            stackState.MiddleProtocols.Add(new HeartbeatProtocol());
             // Seq (this protocol will block broadcasted messages)
             stackState.MiddleProtocols.Add(new SequenceProtocol());
             // AES

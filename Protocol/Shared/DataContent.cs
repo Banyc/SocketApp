@@ -37,6 +37,7 @@ namespace SocketApp.Protocol
         public bool IsAesError = false;
         public bool IsAckWrong = false;
         public TransportState TransportState = new TransportState();
+        public bool IsHeartbeatTimeout = false;
         // passed from top
         public SockBase.SocketSendEventHandler ExternalCallback = null;
         public object ExternalCallbackState = null;
@@ -53,6 +54,7 @@ namespace SocketApp.Protocol
             dataContent.IsAesError = this.IsAesError;
             dataContent.IsAckWrong = this.IsAckWrong;
             dataContent.TransportState = (TransportState)this.TransportState.Clone();
+            dataContent.IsHeartbeatTimeout = this.IsHeartbeatTimeout;
             dataContent.ExternalCallback = this.ExternalCallback;
             dataContent.ExternalCallbackState = this.ExternalCallbackState;
             return dataContent;

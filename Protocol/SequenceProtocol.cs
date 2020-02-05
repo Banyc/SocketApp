@@ -6,6 +6,7 @@ namespace SocketApp.Protocol
 {
     // prevent replay attack
     // Challenge–response authentication
+    // TODO: prevent race condition
     public class SequenceProtocol : IProtocol
     {
         public event NextLowLayerEventHandler NextLowLayerEvent;
