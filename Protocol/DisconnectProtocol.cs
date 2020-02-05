@@ -13,7 +13,7 @@ namespace SocketApp.Protocol
 
         public void FromLowLayerToHere(DataContent dataContent)
         {
-            if (dataContent.IsAesError || dataContent.IsAckWrong || dataContent.IsHeartbeatTimeout)
+            if (!dataContent.IsValid)
             {
                 dataContent.SockMgr?.Shutdown();
                 return;

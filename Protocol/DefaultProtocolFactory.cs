@@ -138,6 +138,8 @@ namespace SocketApp.Protocol
             stackState.MiddleProtocols.Add(new DisconnectProtocol());
             // Heartbeat
             stackState.MiddleProtocols.Add(new HeartbeatProtocol());
+            // Timestamp
+            stackState.MiddleProtocols.Add(new TimestampProtocol());
             // Seq (this protocol will block broadcasted messages)
             stackState.MiddleProtocols.Add(new SequenceProtocol());
             // AES

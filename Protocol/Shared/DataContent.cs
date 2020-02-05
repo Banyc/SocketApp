@@ -26,7 +26,7 @@ namespace SocketApp.Protocol
             return state;
         }
     }
-    
+
     public class DataContent : ICloneable  // passing through all layers of protocols/middlewares
     {
         public SockController SockController = null;
@@ -38,9 +38,17 @@ namespace SocketApp.Protocol
         public bool IsAckWrong = false;
         public TransportState TransportState = new TransportState();
         public bool IsHeartbeatTimeout = false;
+        public bool IsTimestampWrong = false;
         // passed from top
         public SockBase.SocketSendEventHandler ExternalCallback = null;
         public object ExternalCallbackState = null;
+        public bool IsValid
+        {
+            get
+            {
+                return !IsAesError && !IsAckWrong && !IsHeartbeatTimeout && !IsTimestampWrong;
+            }
+        }
         // hint: add necessary field here
 
         public object Clone()
@@ -55,6 +63,7 @@ namespace SocketApp.Protocol
             dataContent.IsAckWrong = this.IsAckWrong;
             dataContent.TransportState = (TransportState)this.TransportState.Clone();
             dataContent.IsHeartbeatTimeout = this.IsHeartbeatTimeout;
+            dataContent.IsTimestampWrong = this.IsTimestampWrong;
             dataContent.ExternalCallback = this.ExternalCallback;
             dataContent.ExternalCallbackState = this.ExternalCallbackState;
             return dataContent;

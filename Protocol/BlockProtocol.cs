@@ -13,7 +13,7 @@ namespace SocketApp.Protocol
 
         public void FromLowLayerToHere(DataContent dataContent)
         {
-            if (dataContent.IsAesError || dataContent.IsAckWrong)
+            if (!dataContent.IsValid)
                 return;
             NextHighLayerEvent?.Invoke(dataContent);
         }
