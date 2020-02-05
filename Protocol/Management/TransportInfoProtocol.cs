@@ -8,6 +8,8 @@ namespace SocketApp.Protocol
 
         private int _prevReceivedLength = 0;
         private DateTime _prevTime;
+        private double _prevSpeed = 0;  // KB/s
+        private const double alpha = 0.2;
 
         public TransportInfoProtocol()
         {
@@ -30,6 +32,7 @@ namespace SocketApp.Protocol
                 {
                     _prevReceivedLength = state.ReceivedLength;
                     _prevTime = DateTime.Now;
+                    _prevSpeed = 0;
                     return;
                 }
                 //  count speed
@@ -39,9 +42,10 @@ namespace SocketApp.Protocol
                 }
                 else
                 {
-                    state.Speed = (state.ReceivedLength - _prevReceivedLength) / 1024 / (DateTime.Now - _prevTime).TotalSeconds;
+                    state.Speed = (1 - alpha) * _prevSpeed + alpha * (state.ReceivedLength - _prevReceivedLength) / 1024 / (DateTime.Now - _prevTime).TotalSeconds;
                 }
                 //  update
+                _prevSpeed = state.Speed;
                 _prevReceivedLength = state.ReceivedLength;
                 _prevTime = DateTime.Now;
                 // write state in dataContent
