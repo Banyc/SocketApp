@@ -13,7 +13,8 @@ namespace SocketApp
         public Responser(SockController sockController, ProtocolStack protocolStack, SockMgr sockMgr)
         {
             _sockController = sockController;
-            LinkProtocolStackEvents(protocolStack);
+            if (sockMgr.GetSockBase().Role == SocketRole.Client)  // listener does not need to send or receive
+                LinkProtocolStackEvents(protocolStack);
             _sockMgr = sockMgr;
         }
 
