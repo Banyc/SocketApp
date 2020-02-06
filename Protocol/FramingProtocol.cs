@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 
 namespace SocketApp.Protocol
 {
@@ -9,12 +8,8 @@ namespace SocketApp.Protocol
         public event NextLowLayerEventHandler NextLowLayerEvent;
         public event NextHighLayerEventHandler NextHighLayerEvent;
         private Util.BufferMgr _bufferMgr = new Util.BufferMgr();
-        ManualResetEvent _topDownOrdering;
-        ManualResetEvent _buttomUpOrdering;
-        public FramingProtocol(ManualResetEvent topDownOrdering, ManualResetEvent buttomUpOrdering)
+        public FramingProtocol()
         {
-            _topDownOrdering = topDownOrdering;
-            _buttomUpOrdering = buttomUpOrdering;
         }
 
         public void FromHighLayerToHere(DataContent dataContent)
@@ -27,19 +22,10 @@ namespace SocketApp.Protocol
             prefix_data.AddRange(data);
             dataContent.Data = prefix_data.ToArray();
             NextLowLayerEvent?.Invoke(dataContent);
-            _topDownOrdering.Set();
         }
 
         public void FromLowLayerToHere(DataContent dataContent)
         {
-            try
-            {
-                _buttomUpOrdering.WaitOne();
-            }
-            catch (AbandonedMutexException)
-            {
-                // Workaround; in case socket shutdown
-            }
             _bufferMgr.AddBytes((byte[])dataContent.Data, ((byte[])dataContent.Data).Length);
             dataContent.Data = null;
 

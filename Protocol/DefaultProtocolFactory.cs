@@ -137,10 +137,6 @@ namespace SocketApp.Protocol
 
         private static void AddBasicSecurityLayer(ProtocolStackState stackState, AESProtocolState aesState)
         {
-            // ordering
-            ManualResetEvent topDownOrdering = new ManualResetEvent(true);
-            ManualResetEvent buttomUpOrdering = new ManualResetEvent(true);
-
             // Block invalid data and report
             stackState.MiddleProtocols.Add(new BlockProtocol());
             // Heartbeat
@@ -148,13 +144,13 @@ namespace SocketApp.Protocol
             // Timestamp
             stackState.MiddleProtocols.Add(new TimestampProtocol());
             // Seq (this protocol will block broadcasted messages)  // identify false decryption  // TODO: replace it with challenge
-            stackState.MiddleProtocols.Add(new SequenceProtocol(topDownOrdering, buttomUpOrdering));
+            stackState.MiddleProtocols.Add(new SequenceProtocol());
             // AES
             AESProtocol aesP = new AESProtocol();
             aesP.SetState((AESProtocolState)aesState.Clone());
             stackState.MiddleProtocols.Add(aesP);
             // Framing
-            stackState.MiddleProtocols.Add(new FramingProtocol(topDownOrdering, buttomUpOrdering));
+            stackState.MiddleProtocols.Add(new FramingProtocol());
         }
 
         private ProtocolStack GetBroadcastStack()
