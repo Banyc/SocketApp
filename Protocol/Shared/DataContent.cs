@@ -39,6 +39,7 @@ namespace SocketApp.Protocol
         public TransportState TransportState = new TransportState();
         public bool IsHeartbeatTimeout = false;
         public bool IsTimestampWrong = false;
+        public bool IsTypeWrong = false;
         // passed from top
         public SockBase.SocketSendEventHandler ExternalCallback = null;
         public object ExternalCallbackState = null;
@@ -46,7 +47,7 @@ namespace SocketApp.Protocol
         {
             get
             {
-                return !IsAesError && !IsAckWrong && !IsHeartbeatTimeout && !IsTimestampWrong;
+                return !IsAesError && !IsAckWrong && !IsHeartbeatTimeout && !IsTimestampWrong && !IsTypeWrong;
             }
         }
         // hint: add necessary field here
@@ -64,6 +65,7 @@ namespace SocketApp.Protocol
             dataContent.TransportState = (TransportState)this.TransportState.Clone();
             dataContent.IsHeartbeatTimeout = this.IsHeartbeatTimeout;
             dataContent.IsTimestampWrong = this.IsTimestampWrong;
+            dataContent.IsTypeWrong = this.IsTypeWrong;
             dataContent.ExternalCallback = this.ExternalCallback;
             dataContent.ExternalCallbackState = this.ExternalCallbackState;
             return dataContent;

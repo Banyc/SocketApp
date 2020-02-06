@@ -34,14 +34,22 @@ namespace SocketApp.Protocol
             }
             // invalid header
             if (((byte[])dataContent.Data).Length < 4)
+            {
+                dataContent.IsTypeWrong = true;
+                NextHighLayerEvent?.Invoke(dataContent);
                 return;
+            }
             // first 4 bytes is the type header
             typeHeader = ((byte[])dataContent.Data).Take(4).ToArray();
             body = ((byte[])dataContent.Data).Skip(4).ToArray();
             int typeIndex = BitConverter.ToInt32(typeHeader);
             dataContent.Data = body;
             if (typeIndex >= (int)DataProtocolType.MaxInvalid || typeIndex <= (int)DataProtocolType.Undefined)
-                return;  // discard if out of range  // it might due to falsely decryption on AES layer
+            {
+                dataContent.IsTypeWrong = true;
+                NextHighLayerEvent?.Invoke(dataContent);
+                return;  // report if out of range  // it might due to falsely decryption on AES layer
+            }
             dataContent.Type = (DataProtocolType)typeIndex;
             NextHighLayerEvent?.Invoke(dataContent);
         }

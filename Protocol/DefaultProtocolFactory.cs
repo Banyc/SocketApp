@@ -113,7 +113,9 @@ namespace SocketApp.Protocol
             branchingProtocol.SetBranches(branches);
             state.MiddleProtocols.Add(branchingProtocol);
 
-            // Type tagging
+            // Block invalid DataContent
+            state.MiddleProtocols.Add(new BlockProtocol());
+            // Type tagging  // blocking false decryption
             TypeTagProtocol typeTagProtocol = new TypeTagProtocol();
             state.MiddleProtocols.Add(typeTagProtocol);
 
@@ -139,13 +141,13 @@ namespace SocketApp.Protocol
             ManualResetEvent topDownOrdering = new ManualResetEvent(true);
             ManualResetEvent buttomUpOrdering = new ManualResetEvent(true);
 
-            // Disconnect
-            stackState.MiddleProtocols.Add(new DisconnectProtocol());
+            // Block invalid data and report
+            stackState.MiddleProtocols.Add(new BlockProtocol());
             // Heartbeat
             stackState.MiddleProtocols.Add(new HeartbeatProtocol());
             // Timestamp
             stackState.MiddleProtocols.Add(new TimestampProtocol());
-            // Seq (this protocol will block broadcasted messages)
+            // Seq (this protocol will block broadcasted messages)  // identify false decryption  // TODO: replace it with challenge
             stackState.MiddleProtocols.Add(new SequenceProtocol(topDownOrdering, buttomUpOrdering));
             // AES
             AESProtocol aesP = new AESProtocol();
@@ -165,6 +167,8 @@ namespace SocketApp.Protocol
             broadcaseState.SockMgr = _options.SockMgr;
             state.MiddleProtocols.Add(new BroadcastProtocol(broadcaseState));
 
+            // Disconnect when dataContent invalid and report
+            state.MiddleProtocols.Add(new DisconnectProtocol());
             AddBasicSecurityLayer(state, _options.FirstLowAESProtocolState);
 
             ProtocolStack protocolStack = new ProtocolStack();
