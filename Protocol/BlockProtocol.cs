@@ -23,6 +23,7 @@ namespace SocketApp.Protocol
                 Console.WriteLine($"AES Error {dataContent.IsAesError}");
                 Console.WriteLine($"Heartbeat Timeout {dataContent.IsHeartbeatTimeout}");
                 Console.WriteLine($"Timestamp Wrong {dataContent.IsTimestampWrong}");
+                Console.WriteLine($"IsTypeWrong {dataContent.IsTypeWrong}");
                 
                 return;
             }
