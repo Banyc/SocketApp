@@ -126,6 +126,8 @@ namespace SocketApp.Protocol
             aesP.SetState((AESProtocolState)_options.SecondLowAESProtocolState.Clone());
             state.MiddleProtocols.Add(aesP);
 
+            // Block invalid data and report
+            state.MiddleProtocols.Add(new BlockProtocol());
             // Basic Security Layers
             AddBasicSecurityLayer(state, _options.FirstLowAESProtocolState);
 
@@ -137,13 +139,11 @@ namespace SocketApp.Protocol
 
         private static void AddBasicSecurityLayer(ProtocolStackState stackState, AESProtocolState aesState)
         {
-            // Block invalid data and report
-            stackState.MiddleProtocols.Add(new BlockProtocol());
             // Heartbeat
             stackState.MiddleProtocols.Add(new HeartbeatProtocol());
             // Timestamp
             stackState.MiddleProtocols.Add(new TimestampProtocol());
-            // Seq (this protocol will block broadcasted messages)  // identify false decryption  // TODO: replace it with challenge
+            // Seq (this protocol will block broadcasted messages)  // identify false decryption
             stackState.MiddleProtocols.Add(new SequenceProtocol());
             // AES
             AESProtocol aesP = new AESProtocol();
