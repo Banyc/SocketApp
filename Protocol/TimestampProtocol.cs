@@ -12,7 +12,7 @@ namespace SocketApp.Protocol
 
         public double _expireSpeedBytePerSec;
         public double _extraTolerationInSec;
-        public TimestampProtocol(double expireSpeedBytePerSec = 1, double extraTolerationInSec = 1 * 60)
+        public TimestampProtocol(double expireSpeedBytePerSec = 1000, double extraTolerationInSec = 1 * 60)
         {
             _expireSpeedBytePerSec = expireSpeedBytePerSec;
             _extraTolerationInSec = extraTolerationInSec;
