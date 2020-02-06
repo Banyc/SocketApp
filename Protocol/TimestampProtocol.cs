@@ -11,9 +11,11 @@ namespace SocketApp.Protocol
         public event NextHighLayerEventHandler NextHighLayerEvent;
 
         public double _expireSpeedBytePerSec;
-        public TimestampProtocol(double expireSpeedBytePerSec = 1)
+        public double _extraTolerationInSec;
+        public TimestampProtocol(double expireSpeedBytePerSec = 1, double extraTolerationInSec = 1 * 60)
         {
             _expireSpeedBytePerSec = expireSpeedBytePerSec;
+            _extraTolerationInSec = extraTolerationInSec;
         }
 
         public void FromHighLayerToHere(DataContent dataContent)
@@ -41,8 +43,8 @@ namespace SocketApp.Protocol
                 dataContent.Data = data;
                 DateTime timestamp = DateTime.FromBinary(timestampLong);
                 // flexible expire time for different lengths
-                double averageSpeed = ((byte[])dataContent.Data).Length / (DateTime.Now - timestamp).TotalSeconds;  // B/s
-                if (averageSpeed < _expireSpeedBytePerSec)
+                double expireInterval = ((byte[])dataContent.Data).Length / _expireSpeedBytePerSec + _extraTolerationInSec;
+                if (expireInterval < (DateTime.Now - timestamp).TotalSeconds)
                 {
                     dataContent.IsTimestampWrong = true;
                 }

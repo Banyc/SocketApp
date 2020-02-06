@@ -1,3 +1,4 @@
+using System;
 namespace SocketApp.Protocol
 {
     // Disconnect when invalid DataContent detected
@@ -15,6 +16,13 @@ namespace SocketApp.Protocol
         {
             if (!dataContent.IsValid)
             {
+                // WORKAROUND - For DEBUG
+                Console.WriteLine("[Error]");
+                Console.WriteLine($"Ack Wrong {dataContent.IsAckWrong}");
+                Console.WriteLine($"AES Error {dataContent.IsAesError}");
+                Console.WriteLine($"Heartbeat Timeout {dataContent.IsHeartbeatTimeout}");
+                Console.WriteLine($"Timestamp Wrong {dataContent.IsTimestampWrong}");
+
                 dataContent.SockMgr?.Shutdown();
                 return;
             }

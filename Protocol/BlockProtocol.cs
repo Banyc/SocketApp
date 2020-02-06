@@ -1,3 +1,5 @@
+using System;
+
 namespace SocketApp.Protocol
 {
     // Block invalid DataContent
@@ -14,7 +16,16 @@ namespace SocketApp.Protocol
         public void FromLowLayerToHere(DataContent dataContent)
         {
             if (!dataContent.IsValid)
+            {
+                // WORKAROUND - For DEBUG
+                Console.WriteLine("[Error]");
+                Console.WriteLine($"Ack Wrong {dataContent.IsAckWrong}");
+                Console.WriteLine($"AES Error {dataContent.IsAesError}");
+                Console.WriteLine($"Heartbeat Timeout {dataContent.IsHeartbeatTimeout}");
+                Console.WriteLine($"Timestamp Wrong {dataContent.IsTimestampWrong}");
+                
                 return;
+            }
             NextHighLayerEvent?.Invoke(dataContent);
         }
     }
