@@ -92,7 +92,8 @@ namespace SocketApp
             protocolFactory.SetSockMgr(this);  // TODO: review
             _protocolFactory = protocolFactory;
 
-            _protocolStack = protocolFactory.GetProtocolStack();
+            if (sockBase.Role == SocketRole.Client)  // listener does not need to send or receive
+                _protocolStack = protocolFactory.GetProtocolStack();
 
             Responser responser = new Responser(_sockController, _protocolStack, this);
             _responser = responser;

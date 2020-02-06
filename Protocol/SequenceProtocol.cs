@@ -7,6 +7,7 @@ namespace SocketApp.Protocol
 {
     // prevent replay attack
     // Challenge–response authentication
+    // size of sending window: 1; size of receiving window: `windowSize`
     public class SequenceProtocol : IProtocol
     {
         public event NextLowLayerEventHandler NextLowLayerEvent;
@@ -53,6 +54,8 @@ namespace SocketApp.Protocol
                 seqHeader = ((byte[])dataContent.Data).Take(4).ToArray();
                 body = ((byte[])dataContent.Data).Skip(4).ToArray();
                 seq = BitConverter.ToInt32(seqHeader);
+                // remove header from dataContent
+                dataContent.Data = body;
                 // init
                 if (_receiveWindow == null)
                     _receiveWindow = new SlidingWindow(seq, _windowSize);
