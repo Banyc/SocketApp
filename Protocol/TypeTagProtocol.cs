@@ -41,7 +41,7 @@ namespace SocketApp.Protocol
             int typeIndex = BitConverter.ToInt32(typeHeader);
             dataContent.Data = body;
             if (typeIndex >= (int)DataProtocolType.MaxInvalid || typeIndex <= (int)DataProtocolType.Undefined)
-                return;  // discard if out of range
+                return;  // discard if out of range  // it might due to falsely decryption on AES layer
             dataContent.Type = (DataProtocolType)typeIndex;
             NextHighLayerEvent?.Invoke(dataContent);
         }

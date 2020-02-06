@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 
 namespace SocketApp.Protocol
 {
+    // Notice: this layer might falsely decrypt data due to a false key
     public class AESProtocolState : ICloneable
     {
         public CipherMode Mode = CipherMode.CBC;
