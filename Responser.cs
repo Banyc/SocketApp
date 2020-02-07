@@ -151,7 +151,7 @@ namespace SocketApp
         {
             _sockController.RemoveSockMgr(e.Handler);
             // TODO: Dispose protocol stack
-            _sockMgr.GetProtocolStack().Dispose();
+            _sockMgr.GetProtocolStack()?.Dispose();
             try
             {
                 // print: [Shutdown] local -> remote
