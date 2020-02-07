@@ -115,7 +115,7 @@ namespace SocketApp.Protocol
 
             // Block invalid DataContent
             state.MiddleProtocols.Add(new BlockProtocol());
-            // Type tagging  // blocking false decryption
+            // Type tagging
             TypeTagProtocol typeTagProtocol = new TypeTagProtocol();
             state.MiddleProtocols.Add(typeTagProtocol);
 
@@ -143,7 +143,7 @@ namespace SocketApp.Protocol
             stackState.MiddleProtocols.Add(new HeartbeatProtocol());
             // Timestamp
             stackState.MiddleProtocols.Add(new TimestampProtocol());
-            // Seq (this protocol will block broadcasted messages)  // identify false decryption
+            // Seq (this protocol will block broadcasted messages)
             stackState.MiddleProtocols.Add(new SequenceProtocol());
             // AES
             AESProtocol aesP = new AESProtocol();
