@@ -150,6 +150,7 @@ namespace SocketApp
         public void OnSockMgrShutdownBegin(Object sender, SockMgrShutdownBeginEventArgs e)
         {
             _sockController.RemoveSockMgr(e.Handler);
+            // TODO: Dispose protocol stack
             try
             {
                 // print: [Shutdown] local -> remote

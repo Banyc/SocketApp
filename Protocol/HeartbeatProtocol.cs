@@ -26,6 +26,8 @@ namespace SocketApp.Protocol
         {
             DataContent dataContent = new DataContent();
             dataContent.IsHeartbeatTimeout = true;
+            _timeoutTimer.Stop();
+            _heartbeatTimer.Stop();
             NextHighLayerEvent?.Invoke(dataContent);
         }
 
