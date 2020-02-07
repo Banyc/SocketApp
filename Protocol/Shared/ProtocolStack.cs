@@ -3,10 +3,18 @@ using System.Linq;
 using System.Collections.Generic;
 namespace SocketApp.Protocol
 {
-    public class ProtocolStackState
+    public class ProtocolStackState : IDisposable
     {
         public List<IProtocol> MiddleProtocols = new List<IProtocol>();  // from high to low layer
         public DataProtocolType Type = DataProtocolType.Undefined;  // deprecated
+
+        public void Dispose()
+        {
+            foreach (IProtocol protocol in MiddleProtocols)
+            {
+                protocol.Dispose();
+            }
+        }
 
         public void LinkMiddleProtocols()
         {
@@ -131,6 +139,12 @@ namespace SocketApp.Protocol
             UnlinkMiddleProtocols();
             _state = state;
             LinkMiddleProtocols();
+        }
+
+        public void Dispose()
+        {
+            UnlinkMiddleProtocols();
+            _state.Dispose();
         }
     }
 }

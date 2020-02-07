@@ -28,6 +28,10 @@ namespace SocketApp.Protocol
         public event NextLowLayerEventHandler NextLowLayerEvent;
         public event NextHighLayerEventHandler NextHighLayerEvent;
 
+        public void Dispose()
+        {
+        }
+
         public void FromHighLayerToHere(DataContent dataContent)
         {
             SmallFileDataObject dataObject = (SmallFileDataObject)dataContent.Data;

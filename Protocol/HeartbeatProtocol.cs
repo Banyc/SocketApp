@@ -53,5 +53,11 @@ namespace SocketApp.Protocol
                 return;
             NextHighLayerEvent?.Invoke(dataContent);
         }
+
+        public void Dispose()
+        {
+            _timeoutTimer.Dispose();
+            _heartbeatTimer.Dispose();
+        }
     }
 }

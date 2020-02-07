@@ -52,5 +52,14 @@ namespace SocketApp.Protocol
                 branch.NextHighLayerEvent += Branch_NextHighLayerEvent;
             }
         }
+
+        public void Dispose()
+        {
+            Unlink();
+            foreach (ProtocolStack stack in _branches)
+            {
+                stack.Dispose();
+            }
+        }
     }
 }

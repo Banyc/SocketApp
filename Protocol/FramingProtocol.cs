@@ -43,5 +43,9 @@ namespace SocketApp.Protocol
             dataContent.TransportState.ReceivedLength = _bufferMgr.GetReceivedLength();
             NextHighLayerEvent?.Invoke(dataContent);
         }
+
+        public void Dispose()
+        {
+        }
     }
 }

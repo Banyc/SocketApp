@@ -63,5 +63,9 @@ namespace SocketApp.Protocol
             // tell this app
             NextHighLayerEvent?.Invoke(dataContent);
         }
+
+        public void Dispose()
+        {
+        }
     }
 }

@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 
 namespace SocketApp.Protocol
 {
-    public class AESProtocolState : ICloneable
+    public class AESProtocolState : ICloneable, IDisposable
     {
         public CipherMode Mode = CipherMode.CBC;
         public int KeySize = 128;
@@ -27,6 +27,11 @@ namespace SocketApp.Protocol
             state.Key = (byte[]) this.Key?.Clone();
             state.Enabled = this.Enabled;
             return state;
+        }
+
+        public void Dispose()
+        {
+            Key = null;
         }
     }
 
@@ -119,6 +124,11 @@ namespace SocketApp.Protocol
                 cryptoStream.FlushFinalBlock();  // add padding when encryption
                 return ms.ToArray();
             }
+        }
+
+        public void Dispose()
+        {
+            _aesAlg.Dispose();
         }
     }
 }

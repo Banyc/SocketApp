@@ -61,5 +61,9 @@ namespace SocketApp.Protocol
                 }
             }
         }
+
+        public void Dispose()
+        {
+        }
     }
 }

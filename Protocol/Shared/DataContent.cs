@@ -32,6 +32,7 @@ namespace SocketApp.Protocol
         public SockController SockController = null;
         public SockMgr SockMgr = null;
         public ICloneable Data = null;  // the undefined type of data
+        public bool IsShutdown = false;
         public DataProtocolType Type = DataProtocolType.Undefined;  // determine which branch of protocol to go
         public byte[] AesKey = null;  // to update the AesKey through protocol stack
         public bool IsAesError = false;
@@ -58,6 +59,7 @@ namespace SocketApp.Protocol
             dataContent.SockController = this.SockController;
             dataContent.SockMgr = this.SockMgr;
             dataContent.Data = (ICloneable)this.Data?.Clone();
+            dataContent.IsShutdown = this.IsShutdown;
             dataContent.Type = this.Type;
             dataContent.AesKey = (byte[])AesKey?.Clone();
             dataContent.IsAesError = this.IsAesError;
