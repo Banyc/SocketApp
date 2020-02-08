@@ -14,6 +14,7 @@ namespace SocketApp
 
         public UserConsole(SockController sockController)
         {
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
             _sockController = sockController;
             _protocolOptions.SockController = sockController;
         }
