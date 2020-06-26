@@ -29,7 +29,6 @@ namespace SocketApp.Simple.Protocol
 
     public class DataContent : ICloneable  // passing through all layers of protocols/middlewares
     {
-        public SockController SockController = null;
         public SockMgr SockMgr = null;
         public ICloneable Data = null;  // the undefined type of data
         public bool IsShutdown = false;
@@ -53,7 +52,6 @@ namespace SocketApp.Simple.Protocol
         public object Clone()
         {
             DataContent dataContent = new DataContent();
-            dataContent.SockController = this.SockController;
             dataContent.SockMgr = this.SockMgr;
             dataContent.Data = (ICloneable)this.Data?.Clone();
             dataContent.IsShutdown = this.IsShutdown;
