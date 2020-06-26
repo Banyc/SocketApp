@@ -9,7 +9,7 @@ namespace SocketApp.Simple.Protocol
         private int _prevReceivedLength = 0;
         private DateTime _prevTime;
         private double _prevSpeed = 0;  // KB/s
-        private const double alpha = 0.2;
+        private const double alpha = 0.1;
 
         public TransportInfoProtocol()
         {

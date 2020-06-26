@@ -36,3 +36,4 @@ To register your protocols, build your own protocol factory deriving from `IProt
 - [ ] Support UDP
 - [ ] SocketApp Hosts a Http Proxy Server
 - [ ] Big file transportation protocol
+- [ ] replace callback mechanism with async

@@ -511,12 +511,8 @@ namespace SocketApp.Simple
                 return;
             }
             Console.WriteLine("Sending File");
-            sockMgr.SendSmallFile(dataObject, SendSmallFileCallback, filepath);
-        }
-
-        private static void SendSmallFileCallback(object sender, SockMgrSendEventArgs e)
-        {
-            Console.WriteLine($"[File] File \"{(string)e.ExternalCallbackState}\" Sent");
+            sockMgr.SendSmallFile(dataObject);
+            Console.WriteLine($"[File] File \"{dataObject.Filename}\" Sent");
             Console.Write("> ");
         }
 

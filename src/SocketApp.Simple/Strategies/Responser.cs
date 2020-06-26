@@ -34,7 +34,8 @@ namespace SocketApp.Simple
         // respond to event at the bottom of the protocol stack
         private void OnNextLowLayerEvent(Protocol.DataContent dataContent)
         {
-            _sockMgr.GetSockBase().StartSend((byte[])dataContent.Data, dataContent.ExternalCallback, dataContent.ExternalCallbackState);
+            var task = _sockMgr.GetSockBase().SendAsync((byte[])dataContent.Data);
+            task.Wait();
         }
         // respond to event at the top of the protocol stack
         private void OnNextHighLayerEvent(Protocol.DataContent dataContent)

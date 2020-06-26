@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Net;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SocketApp.Simple
 {
@@ -10,13 +11,6 @@ namespace SocketApp.Simple
     {
         Listener,
         Client,
-    }
-
-    public class SocketSendEventArgs
-    {
-        public SocketSendEventArgs(SendStateObject state, SockBase handler) { State = state; Handler = handler; }
-        public SockBase Handler { get; }
-        public SendStateObject State { get; }
     }
 
     public class SocketAcceptEventArgs
@@ -74,18 +68,9 @@ namespace SocketApp.Simple
         public object externalCallbackState = null;
     }
 
-    public class SendStateObject
-    {
-        public Socket workSocket = null;
-        public SockBase.SocketSendEventHandler externalCallback = null;
-        public object externalCallbackState = null;
-    }
-
     // socket base to provide basic asynchronous interface of system socket
     public class SockBase
     {
-        public delegate void SocketSendEventHandler(object sender, SocketSendEventArgs e);
-        public event SocketSendEventHandler SocketSendEvent;
         public delegate void SocketAcceptEventHandler(object sender, SocketAcceptEventArgs e);
         public event SocketAcceptEventHandler SocketAcceptEvent;
         public delegate void SocketConnectEventHandler(object sender, SocketConnectEventArgs e);
@@ -112,30 +97,10 @@ namespace SocketApp.Simple
             return _socket;
         }
 
-        // async
-        public void StartSend(byte[] data, SocketSendEventHandler externalCallback = null, object externalCallbackState = null)
+        public async Task<int> SendAsync(byte[] data)
         {
-            SendStateObject state = new SendStateObject();
-            state.workSocket = _socket;
-            state.externalCallback = externalCallback;
-            state.externalCallbackState = externalCallbackState;
-            _socket.BeginSend(data, 0, data.Length, SocketFlags.None,
-                new System.AsyncCallback(SendCallback), state);
-        }
-        private void SendCallback(IAsyncResult ar)
-        {
-            try
-            {
-                SendStateObject state = (SendStateObject) ar.AsyncState;
-                Socket handler = state.workSocket;
-                handler.EndSend(ar);  // BUG: returns before data sent
-
-                SocketSendEvent?.Invoke(this, new SocketSendEventArgs(state, this));
-                if (state.externalCallback != null)
-                    state.externalCallback(this, new SocketSendEventArgs(state, this));
-            }
-            catch (ObjectDisposedException) { }  // socket closed
-            catch (SocketException) { }  // socket closed by peer
+            ArraySegment<byte> dataArray = new ArraySegment<byte>(data);
+            return await _socket.SendAsync(dataArray, SocketFlags.None);
         }
 
         // async Accept
@@ -152,7 +117,7 @@ namespace SocketApp.Simple
         {
             try
             {
-                AcceptStateObject state = (AcceptStateObject) ar.AsyncState;
+                AcceptStateObject state = (AcceptStateObject)ar.AsyncState;
                 // Get the socket that handles the client request.  
                 Socket listener = state.workSocket;
                 Socket handler = listener.EndAccept(ar);
