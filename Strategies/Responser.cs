@@ -5,7 +5,7 @@ using SocketApp.Protocol;
 namespace SocketApp
 {
     // passively respond to socket events
-    public class Responser
+    public class Responser : IResponser
     {
         SockController _sockController;
         SockMgr _sockMgr;
@@ -99,7 +99,7 @@ namespace SocketApp
         }
 
         // received new message
-        public void OnSockMgrReceive(Object sender, SockMgrReceiveEventArgs e)
+        public void OnSockMgrReceive(object sender, SockMgrReceiveEventArgs e)
         {
             if (e.Handler != _sockMgr)
                 throw new Exception("this Responser is not serving the right SockMgr");
@@ -113,7 +113,7 @@ namespace SocketApp
         }
 
         // the connection might be a failed one
-        public void OnSockMgrConnect(Object sender, SockMgrConnectEventArgs e)
+        public void OnSockMgrConnect(object sender, SockMgrConnectEventArgs e)
         {
             if (!e.Handler.GetSockBase().IsConnected)  // connection failed
             {
@@ -133,7 +133,7 @@ namespace SocketApp
                 e.Handler.GetSockBase().GetSocket().RemoteEndPoint.ToString()));
         }
 
-        public void OnSockMgrAccept(Object sender, SockMgrAcceptEventArgs e)
+        public void OnSockMgrAccept(object sender, SockMgrAcceptEventArgs e)
         {
             _sockController.AddSockMgr(e.Handler, SocketRole.Client);
             // print: [Accept] local -> remote
@@ -147,7 +147,7 @@ namespace SocketApp
                 e.Handler.GetSockBase().GetSocket().RemoteEndPoint.ToString()));
         }
 
-        public void OnSockMgrShutdownBegin(Object sender, SockMgrShutdownBeginEventArgs e)
+        public void OnSockMgrShutdownBegin(object sender, SockMgrShutdownBeginEventArgs e)
         {
             _sockController.RemoveSockMgr(e.Handler);
             // TODO: Dispose protocol stack
