@@ -6,7 +6,9 @@ namespace SocketApp.Simple
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            SockController controller = new SockController();
+            UserConsole console = new UserConsole(controller);
+            console.ConsoleEntry(args);
         }
     }
 }
