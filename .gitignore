@@ -1,0 +1,12 @@
+# dotnet
+# .gitignore
+.vscode
+bin/
+obj/
+
+# general
+secret/
+archive
+recvFiles/
+*key*
+*.zip
