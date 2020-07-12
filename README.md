@@ -7,6 +7,7 @@ A simple interactive socket. Cross-platform.
 - Console app. Cross-platform.
 - Build the host and the client at the same time
 - Easy to setup a new Socket experiment
+- Including additional network layers on top of the transport layer. Learn more from `SocketApp.ProtocolStack`.
 
 ## Build
 
@@ -33,6 +34,7 @@ To register your protocols, build your own protocol factory deriving from `IProt
 
 ## TODO
 
+- [ ] Deport ProtocolStack to an independent project.
 - [ ] Support UDP
 - [ ] SocketApp Hosts a Http Proxy Server
 - [ ] Big file transportation protocol
