@@ -3,10 +3,9 @@ using System.Linq;
 using System.Collections.Generic;
 namespace SocketApp.ProtocolStack.Protocol
 {
-    public class ProtocolStackState : IDisposable
+    public class ProtocolStackOptions : IDisposable
     {
         public List<IProtocol> MiddleProtocols = new List<IProtocol>();  // from high to low layer
-        public DataProtocolType Type = DataProtocolType.Undefined;  // deprecated
 
         public void Dispose()
         {
@@ -53,52 +52,58 @@ namespace SocketApp.ProtocolStack.Protocol
     // a full protocol stack that contains protocols/middlewares
     public class ProtocolStack : IProtocol
     {
-        private ProtocolStackState _state = new ProtocolStackState();
+        private ProtocolStackOptions _options = new ProtocolStackOptions();
 
         public event NextLowLayerEventHandler NextLowLayerEvent;
         public event NextHighLayerEventHandler NextHighLayerEvent;
+
+        public ProtocolStack(ProtocolStackOptions options)
+        {
+            _options = options;
+        }
+
         private void LinkMiddleProtocols()
         {
-            _state.LinkMiddleProtocols();
+            _options.LinkMiddleProtocols();
             int i;
-            for (i = 0; i < _state.MiddleProtocols.Count; ++i)
+            for (i = 0; i < _options.MiddleProtocols.Count; ++i)
             {
-                if (i + 1 < _state.MiddleProtocols.Count)
+                if (i + 1 < _options.MiddleProtocols.Count)
                 {
                 }
                 else  // already the last element
                 {
-                    _state.MiddleProtocols[i].NextLowLayerEvent += OnNextLowLayerEvent;
+                    _options.MiddleProtocols[i].NextLowLayerEvent += OnNextLowLayerEvent;
                 }
                 if (i > 0)
                 {
                 }
                 else  // the first element
                 {
-                    _state.MiddleProtocols[i].NextHighLayerEvent += OnNextHighLayerEvent;
+                    _options.MiddleProtocols[i].NextHighLayerEvent += OnNextHighLayerEvent;
                 }
             }
         }
 
         private void UnlinkMiddleProtocols()
         {
-            _state.UnlinkMiddleProtocols();
+            _options.UnlinkMiddleProtocols();
             int i;
-            for (i = 0; i < _state.MiddleProtocols.Count; ++i)
+            for (i = 0; i < _options.MiddleProtocols.Count; ++i)
             {
-                if (i + 1 < _state.MiddleProtocols.Count)
+                if (i + 1 < _options.MiddleProtocols.Count)
                 {
                 }
                 else  // already the last element
                 {
-                    _state.MiddleProtocols[i].NextLowLayerEvent -= OnNextLowLayerEvent;
+                    _options.MiddleProtocols[i].NextLowLayerEvent -= OnNextLowLayerEvent;
                 }
                 if (i > 0)
                 {
                 }
                 else  // the first element
                 {
-                    _state.MiddleProtocols[i].NextHighLayerEvent -= OnNextHighLayerEvent;
+                    _options.MiddleProtocols[i].NextHighLayerEvent -= OnNextHighLayerEvent;
                 }
             }
         }
@@ -114,37 +119,18 @@ namespace SocketApp.ProtocolStack.Protocol
 
         public void FromHighLayerToHere(DataContent data)
         {
-            _state.MiddleProtocols.First().FromHighLayerToHere(data);
+            _options.MiddleProtocols.First().FromHighLayerToHere(data);
         }
 
         public void FromLowLayerToHere(DataContent data)
         {
-            _state.MiddleProtocols.Last().FromLowLayerToHere(data);
-        }
-
-        // remove all Event chains
-        public void RemoveEventChains()
-        {
-            UnlinkMiddleProtocols();
-        }
-
-        public ProtocolStackState GetState()
-        {
-            return _state;
-        }
-
-        // setup Event chains
-        public void SetState(ProtocolStackState state)
-        {
-            UnlinkMiddleProtocols();
-            _state = state;
-            LinkMiddleProtocols();
+            _options.MiddleProtocols.Last().FromLowLayerToHere(data);
         }
 
         public void Dispose()
         {
             UnlinkMiddleProtocols();
-            _state.Dispose();
+            _options.Dispose();
         }
     }
 }
