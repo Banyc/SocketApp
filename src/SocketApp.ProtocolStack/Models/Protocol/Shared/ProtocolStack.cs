@@ -59,7 +59,15 @@ namespace SocketApp.ProtocolStack.Protocol
 
         public ProtocolStack(ProtocolStackOptions options)
         {
+            BuildProtocolStack(options);
+        }
+
+        // setup Event chains
+        private void BuildProtocolStack(ProtocolStackOptions options)
+        {
+            UnlinkMiddleProtocols();
             _options = options;
+            LinkMiddleProtocols();
         }
 
         private void LinkMiddleProtocols()

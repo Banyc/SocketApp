@@ -34,7 +34,7 @@ To register your protocols, build your own protocol factory deriving from `IProt
 
 ## TODO
 
-- [ ] Deport ProtocolStack to an independent project.
+- [x] Deport `ProtocolStack` to an independent project.
 - [ ] Support UDP
 - [ ] SocketApp Hosts a Http Proxy Server
 - [ ] Big file transportation protocol

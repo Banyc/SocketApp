@@ -9,6 +9,11 @@ namespace SocketApp.ProtocolStack.Protocol
 
         private List<ProtocolStack> _branches = new List<ProtocolStack>();
 
+        public DeliverProtocol(List<ProtocolStack> branches)
+        {
+            SetBranches(branches);
+        }
+
         public void FromHighLayerToHere(DataContent dataContent)
         {
             this._branches[FromHighLayerToHere_IndexSelection(dataContent)].FromHighLayerToHere(dataContent);
@@ -30,7 +35,7 @@ namespace SocketApp.ProtocolStack.Protocol
             NextHighLayerEvent?.Invoke(dataContent);
         }
 
-        public void SetBranches(List<ProtocolStack> branches)
+        private void SetBranches(List<ProtocolStack> branches)
         {
             Unlink();
             _branches = branches;

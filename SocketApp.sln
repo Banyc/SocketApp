@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocketApp.Hybrid", "src\Soc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocketApp.Simple", "src\SocketApp.Simple\SocketApp.Simple.csproj", "{6FCD62F8-6C53-4601-B75F-3E1F39524F08}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocketApp.ProtocolStack", "src\SocketApp.ProtocolStack\SocketApp.ProtocolStack.csproj", "{A73D5A95-F351-4E94-AE7A-980BBE47D24A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,9 +48,22 @@ Global
 		{6FCD62F8-6C53-4601-B75F-3E1F39524F08}.Release|x64.Build.0 = Release|Any CPU
 		{6FCD62F8-6C53-4601-B75F-3E1F39524F08}.Release|x86.ActiveCfg = Release|Any CPU
 		{6FCD62F8-6C53-4601-B75F-3E1F39524F08}.Release|x86.Build.0 = Release|Any CPU
+		{A73D5A95-F351-4E94-AE7A-980BBE47D24A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A73D5A95-F351-4E94-AE7A-980BBE47D24A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A73D5A95-F351-4E94-AE7A-980BBE47D24A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A73D5A95-F351-4E94-AE7A-980BBE47D24A}.Debug|x64.Build.0 = Debug|Any CPU
+		{A73D5A95-F351-4E94-AE7A-980BBE47D24A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A73D5A95-F351-4E94-AE7A-980BBE47D24A}.Debug|x86.Build.0 = Debug|Any CPU
+		{A73D5A95-F351-4E94-AE7A-980BBE47D24A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A73D5A95-F351-4E94-AE7A-980BBE47D24A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A73D5A95-F351-4E94-AE7A-980BBE47D24A}.Release|x64.ActiveCfg = Release|Any CPU
+		{A73D5A95-F351-4E94-AE7A-980BBE47D24A}.Release|x64.Build.0 = Release|Any CPU
+		{A73D5A95-F351-4E94-AE7A-980BBE47D24A}.Release|x86.ActiveCfg = Release|Any CPU
+		{A73D5A95-F351-4E94-AE7A-980BBE47D24A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{3F2ECF1D-67CB-455C-9CAF-0A9F18D83809} = {0CC79DF0-DD00-4E2D-A42C-824BF781CCE1}
 		{6FCD62F8-6C53-4601-B75F-3E1F39524F08} = {0CC79DF0-DD00-4E2D-A42C-824BF781CCE1}
+		{A73D5A95-F351-4E94-AE7A-980BBE47D24A} = {0CC79DF0-DD00-4E2D-A42C-824BF781CCE1}
 	EndGlobalSection
 EndGlobal
