@@ -7,12 +7,16 @@ A simple interactive socket. Cross-platform.
 - Console app. Cross-platform.
 - Build the host and the client at the same time
 - Easy to setup a new Socket experiment
-- Including additional network layers on top of the transport layer. Learn more from `SocketApp.ProtocolStack`.
+- Including additional network layers on top of the transport layer. Learn more from [`SocketApp.ProtocolStack`](src/SocketApp.ProtocolStack).
 
-## Build
+## Notice
+
+The following instructions presumes `pwd` to be [`src/SocketApp.Hybrid`](src/SocketApp.Hybrid)
+
+## Run
 
 - download dotnet SDK
-- set pwd to the same directory as `.csproj` in
+- set pwd to [the same directory as `.csproj` in](src/SocketApp.Hybrid)
 - run `dotnet run`
 
 ## Customization
